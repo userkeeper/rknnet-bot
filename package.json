@@ -1,0 +1,18 @@
+{
+  "name": "rknnet-bot",
+  "version": "1.0.0",
+  "description": "РКН.НЕТ — Telegram Bot + Mini App",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "express": "^4.18.2",
+    "node-telegram-bot-api": "^0.64.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
