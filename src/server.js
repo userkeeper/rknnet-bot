@@ -200,7 +200,7 @@ bot.on('callback_query', async (q) => {
     const code = getRefCode(userId);
     const refs = countReferrals(userId);
     const free = getFreeMonths(userId);
-    const link = `https://t.me/rkn_net_bot?start=${code}`;
+    const link = `https://t.me/PKHHET_bot?start=${code}`;
     await edit(
       `👥 *Реферальная программа*\n\nПриводи друзей — получай бесплатные месяцы\\.\n\n*Твоя ссылка:*\n\`${link.replace(/[_.*[\]()~>#+=|{}.!-]/g, '\\$&')}\`\n\n*Как работает:*\n1\\. Отправляешь ссылку другу\n2\\. Друг оформляет подписку\n3\\. Ты получаешь *\\+1 месяц бесплатно*\n\n📊 Приглашено: *${refs}*\n🎁 Бесплатных месяцев: *${free}*`,
       backKeyboard()
