@@ -6,19 +6,19 @@
 <title>РКН.НЕТ</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Unbounded:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Unbounded:wght@400;700;900&display=swap');
 
 :root {
-  --bg: #080810;
-  --surface: #0f0f1a;
-  --card: #13131f;
-  --border: #1c1c2e;
-  --accent: #00e87a;
-  --accent2: #2f80ed;
-  --accent3: #f7c948;
-  --text: #e2e2f0;
-  --muted: #5a5a72;
-  --danger: #ff3d5a;
+  --bg: #05050a;
+  --surface: #0a0a12;
+  --card: #0e0e18;
+  --border: #1a1a2e;
+  --accent: #00ff88;
+  --red: #ff2244;
+  --blue: #0066ff;
+  --text: #e0e0f0;
+  --muted: #444466;
+  --dim: #222240;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -26,715 +26,622 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Share Tech Mono', monospace;
   min-height: 100vh;
   overflow-x: hidden;
+  padding-bottom: 70px;
 }
 
-body::before {
+/* scanline effect */
+body::after {
   content:'';
   position:fixed; inset:0;
-  background:
-    radial-gradient(ellipse 70% 40% at 20% 10%, rgba(0,232,122,0.07) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 80% 90%, rgba(47,128,237,0.06) 0%, transparent 60%);
-  pointer-events:none; z-index:0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,136,0.01) 2px, rgba(0,255,136,0.01) 4px);
+  pointer-events:none; z-index:999;
 }
 
-/* ── HEADER ── */
-.header {
-  position: sticky; top:0; z-index:100;
-  background: rgba(8,8,16,0.9);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  padding: 12px 16px;
-  display: flex; align-items: center; gap: 10px;
-}
-
-.logo {
-  width: 38px; height: 38px;
-  border-radius: 50%;
-  background: #0a0a14;
-  border: 1.5px solid rgba(0,232,122,0.4);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 16px rgba(0,232,122,0.2);
-  flex-shrink: 0;
-}
-
-.header-text { flex:1; }
-.header-name {
-  font-family: 'Unbounded', sans-serif;
-  font-size: 14px; font-weight: 900;
-  color: var(--text);
-}
-.header-sub {
-  font-size: 10px; color: var(--accent);
-  display: flex; align-items: center; gap: 4px; margin-top: 1px;
-}
-.dot { width:6px; height:6px; background:var(--accent); border-radius:50%; animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-/* ── NAV TABS ── */
-.tabs {
+/* ── BOTTOM NAV ── */
+.nav {
+  position: fixed; bottom:0; left:0; right:0; z-index:100;
+  background: rgba(5,5,10,0.95);
+  border-top: 1px solid var(--border);
   display: flex;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  position: sticky; top: 62px; z-index:99;
-  overflow-x: auto; scrollbar-width: none;
+  backdrop-filter: blur(20px);
 }
-.tabs::-webkit-scrollbar { display:none; }
-
-.tab {
-  flex: 1; min-width: fit-content;
-  padding: 10px 14px;
-  font-size: 11px; font-family: 'JetBrains Mono', monospace;
-  color: var(--muted);
+.nav-btn {
+  flex:1; padding: 12px 8px;
   background: none; border: none; cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s; white-space: nowrap;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  transition: all 0.2s;
 }
-.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.nav-icon { font-size: 20px; }
+.nav-label { font-size: 9px; color: var(--muted); font-family: 'Share Tech Mono', monospace; letter-spacing: 1px; }
+.nav-btn.active .nav-label { color: var(--accent); }
+.nav-btn.active .nav-icon { filter: drop-shadow(0 0 6px var(--accent)); }
 
 /* ── SCREENS ── */
-.screen { display:none; padding: 16px; animation: fadeIn 0.25s ease; }
-.screen.active { display:block; }
-@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.screen { display:none; }
+.screen.active { display:block; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
-/* ── CARDS ── */
-.card {
+/* ── FEED SCREEN ── */
+.feed-header {
+  padding: 20px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.logo-img {
+  width: 48px; height: 48px; border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0,255,136,0.3);
+  box-shadow: 0 0 16px rgba(0,255,136,0.15);
+}
+.feed-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 18px; font-weight: 900;
+  color: var(--text);
+}
+.feed-sub { font-size: 10px; color: var(--accent); margin-top: 2px; letter-spacing: 1px; }
+
+.feed { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+
+/* ── BLOCKS ── */
+.block {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 12px;
-  position: relative; overflow: hidden;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
 }
-.card::before {
-  content:''; position:absolute; top:0; left:0; right:0; height:1px;
-  background: linear-gradient(90deg, transparent, rgba(0,232,122,0.2), transparent);
+.block::before {
+  content:'';
+  position:absolute; top:0; left:0; width:3px; height:100%;
+  background: var(--accent);
 }
+.block.red::before { background: var(--red); }
+.block.blue::before { background: var(--blue); }
+.block.gold::before { background: #ffcc00; }
 
-.card-title {
+.block-head {
+  padding: 12px 14px 8px 18px;
   font-family: 'Unbounded', sans-serif;
-  font-size: 13px; font-weight: 700;
-  color: var(--text); margin-bottom: 10px;
+  font-size: 11px; font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 1px; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
 }
+.block.red .block-head { color: var(--red); }
+.block.blue .block-head { color: #4499ff; }
+.block.gold .block-head { color: #ffcc00; }
 
-/* ── COMPARE ── */
-.compare { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
-.compare-col { background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; }
-.compare-col.bad { border:1px solid rgba(255,61,90,0.2); }
-.compare-col.good { border:1px solid rgba(0,232,122,0.2); }
-.compare-head { font-size:10px; font-weight:700; margin-bottom:6px; }
-.compare-col.bad .compare-head { color:var(--danger); }
-.compare-col.good .compare-head { color:var(--accent); }
-.compare-item { font-size:10px; color:var(--muted); margin-bottom:3px; line-height:1.4; }
-.compare-col.good .compare-item { color:var(--text); }
+.block-body { padding: 0 14px 14px 18px; }
 
-/* ── PROMO BLOCK ── */
-.promo-hero {
-  background: linear-gradient(135deg, rgba(247,201,72,0.08), rgba(0,232,122,0.05));
-  border: 1px solid rgba(247,201,72,0.25);
-  border-radius: 20px;
-  padding: 24px 16px;
-  text-align: center;
-  margin-bottom: 16px;
+.block-text {
+  font-size: 12px; color: var(--text); line-height: 1.7;
 }
-.promo-label {
-  font-size: 10px; color: var(--accent3);
-  text-transform: uppercase; letter-spacing: 2px;
-  margin-bottom: 8px;
-}
-.promo-price {
-  font-family: 'Unbounded', sans-serif;
-  font-size: 36px; font-weight: 900;
-  color: var(--accent); line-height:1;
-}
-.promo-period { font-size:12px; color:var(--muted); margin-top:4px; }
-.promo-strike { font-size:11px; color:var(--muted); text-decoration:line-through; margin-top:6px; }
-.promo-save {
-  display:inline-block; margin-top:8px;
-  background:rgba(0,232,122,0.1); border:1px solid rgba(0,232,122,0.3);
-  color:var(--accent); font-size:11px; padding:3px 12px; border-radius:20px;
-}
+.hl { color: var(--accent); font-weight: 700; }
+.hl-red { color: var(--red); }
 
-/* ── COUNTDOWN ── */
-.countdown { display:flex; gap:8px; justify-content:center; margin:16px 0; }
-.cd-unit {
-  flex:1; max-width:70px;
-  background:rgba(0,0,0,0.4); border:1px solid rgba(247,201,72,0.15);
-  border-radius:12px; padding:10px 6px; text-align:center;
-}
-.cd-num {
-  font-family:'Unbounded',sans-serif; font-size:22px; font-weight:900;
-  color:var(--accent3); line-height:1;
-}
-.cd-lbl { font-size:9px; color:var(--muted); margin-top:3px; }
+/* Compare table */
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+.cmp-col { background: rgba(0,0,0,0.3); border-radius: 4px; padding: 10px; }
+.cmp-col.bad { border: 1px solid rgba(255,34,68,0.2); }
+.cmp-col.good { border: 1px solid rgba(0,255,136,0.2); }
+.cmp-head { font-size: 10px; font-weight: 700; margin-bottom: 6px; }
+.cmp-col.bad .cmp-head { color: var(--red); }
+.cmp-col.good .cmp-head { color: var(--accent); }
+.cmp-row { font-size: 10px; color: var(--muted); margin-bottom: 4px; line-height: 1.4; }
+.cmp-col.good .cmp-row { color: #aaaacc; }
 
-/* ── FEATURES LIST ── */
-.feat-list { display:flex; flex-direction:column; gap:8px; }
-.feat-item { display:flex; gap:10px; align-items:flex-start; }
-.feat-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
-.feat-text { font-size:12px; color:var(--text); line-height:1.5; }
-.feat-sub { font-size:10px; color:var(--muted); margin-top:1px; }
+/* Speed bars */
+.spd-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.spd-lbl { font-size:10px; color:var(--muted); width:70px; flex-shrink:0; }
+.spd-track { flex:1; height:4px; background:var(--dim); border-radius:2px; overflow:hidden; }
+.spd-fill { height:100%; border-radius:2px; background: linear-gradient(90deg, var(--blue), var(--accent)); width:0; transition:width 1.2s cubic-bezier(0.4,0,0.2,1); }
+.spd-val { font-size:10px; color:var(--accent); width:50px; text-align:right; flex-shrink:0; }
 
-/* ── SPEED BARS ── */
-.speed-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
-.speed-label { font-size:10px; color:var(--muted); width:80px; flex-shrink:0; }
-.speed-track { flex:1; height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
-.speed-fill {
-  height:100%; border-radius:3px;
-  background:linear-gradient(90deg, var(--accent2), var(--accent));
-  width:0; transition:width 1.2s cubic-bezier(0.4,0,0.2,1);
-}
-.speed-val { font-size:11px; color:var(--accent); width:55px; text-align:right; flex-shrink:0; }
+/* Steps */
+.steps { display:flex; flex-direction:column; gap:0; margin-top:6px; }
+.step { display:flex; gap:12px; padding:8px 0; position:relative; }
+.step:not(:last-child)::after { content:''; position:absolute; left:11px; top:30px; width:1px; height:calc(100% - 8px); background:var(--border); }
+.step-n { width:22px; height:22px; border-radius:2px; flex-shrink:0; background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.3); color:var(--accent); font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.step-t { font-size:11px; color:var(--text); line-height:1.5; padding-top:2px; }
+.step-d { font-size:10px; color:var(--muted); margin-top:2px; line-height:1.4; }
 
-/* ── STEPS ── */
-.steps { display:flex; flex-direction:column; gap:0; }
-.step { display:flex; gap:12px; padding:10px 0; position:relative; }
-.step:not(:last-child)::after {
-  content:''; position:absolute; left:14px; top:36px;
-  width:1px; height:calc(100% - 16px);
-  background:var(--border);
-}
-.step-num {
-  width:28px; height:28px; border-radius:50%; flex-shrink:0;
-  background:rgba(0,232,122,0.1); border:1px solid rgba(0,232,122,0.3);
-  color:var(--accent); font-size:11px; font-weight:700;
-  display:flex; align-items:center; justify-content:center;
-}
-.step-body { flex:1; }
-.step-title { font-size:12px; color:var(--text); font-weight:600; line-height:1.5; }
-.step-desc { font-size:10px; color:var(--muted); margin-top:2px; line-height:1.4; }
+/* Tags */
+.tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
+.tag { background:rgba(0,102,255,0.1); border:1px solid rgba(0,102,255,0.2); color:#6699ff; font-size:10px; padding:3px 8px; border-radius:2px; }
 
-.app-badges { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
-.app-badge {
-  background:rgba(255,255,255,0.05); border:1px solid var(--border);
-  border-radius:8px; padding:4px 10px; font-size:10px; color:var(--text);
-}
-
-/* ── FAQ ── */
-.faq-item {
-  background:var(--card); border:1px solid var(--border);
-  border-radius:12px; padding:14px; margin-bottom:8px;
-}
-.faq-q { font-size:12px; color:var(--accent); font-weight:600; margin-bottom:5px; }
+/* FAQ */
+.faq-item { margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+.faq-item:last-child { border:none; margin:0; padding:0; }
+.faq-q { font-size:11px; color:var(--accent); margin-bottom:4px; }
 .faq-a { font-size:11px; color:var(--muted); line-height:1.6; }
 
-/* ── REF ── */
-.ref-link-box {
-  background:rgba(0,0,0,0.4); border:1px solid rgba(0,232,122,0.2);
-  border-radius:10px; padding:10px 12px; margin:10px 0;
-  font-size:10px; color:var(--accent); word-break:break-all;
-  line-height:1.5;
+/* Promo hero */
+.promo-hero {
+  background: linear-gradient(135deg, rgba(0,102,255,0.08), rgba(0,255,136,0.05));
+  border: 1px solid rgba(0,255,136,0.15);
+  border-radius: 4px; padding: 20px; text-align: center; margin: 12px 0;
 }
-.ref-stats { display:flex; gap:8px; margin-top:10px; }
-.ref-stat {
-  flex:1; background:rgba(0,0,0,0.3); border:1px solid var(--border);
-  border-radius:10px; padding:12px 8px; text-align:center;
-}
-.ref-stat-num {
-  font-family:'Unbounded',sans-serif; font-size:22px; font-weight:900;
-  color:var(--accent);
-}
-.ref-stat-lbl { font-size:9px; color:var(--muted); margin-top:3px; }
+.promo-tag { font-size:9px; color:var(--muted); letter-spacing:3px; text-transform:uppercase; margin-bottom:10px; }
+.promo-price { font-family:'Unbounded',sans-serif; font-size:40px; font-weight:900; color:var(--accent); line-height:1; }
+.promo-yr { font-size:11px; color:var(--muted); margin-top:4px; }
+.promo-was { font-size:11px; color:var(--muted); text-decoration:line-through; margin-top:6px; }
+.promo-save { display:inline-block; margin-top:8px; background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); color:var(--accent); font-size:10px; padding:3px 12px; border-radius:2px; }
 
-/* ── PAYMENT ── */
-.wallet-box {
-  background:rgba(0,232,122,0.04); border:1px solid rgba(0,232,122,0.2);
-  border-radius:12px; padding:14px; text-align:center; margin:12px 0;
-}
-.wallet-addr { font-size:11px; color:var(--accent); word-break:break-all; line-height:1.6; }
-.wallet-label { font-size:9px; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px; }
+/* Countdown */
+.cd { display:flex; gap:6px; justify-content:center; margin:14px 0; }
+.cd-u { flex:1; max-width:60px; background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:4px; padding:8px 4px; text-align:center; }
+.cd-n { font-family:'Unbounded',sans-serif; font-size:20px; font-weight:900; color:#ffcc00; line-height:1; }
+.cd-l { font-size:8px; color:var(--muted); margin-top:2px; letter-spacing:1px; }
 
-.hash-input {
+/* Wallet */
+.wallet {
+  background:rgba(0,255,136,0.03); border:1px solid rgba(0,255,136,0.15);
+  border-radius:4px; padding:12px; margin:10px 0; text-align:center;
+}
+.wallet-lbl { font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; }
+.wallet-addr { font-size:11px; color:var(--accent); word-break:break-all; line-height:1.6; cursor:pointer; }
+
+/* Hash input */
+.hash-inp {
   width:100%; background:rgba(0,0,0,0.4);
-  border:1px solid rgba(0,232,122,0.3); border-radius:10px;
-  padding:12px 14px; font-size:11px; color:var(--accent);
-  font-family:'JetBrains Mono',monospace; outline:none;
+  border:1px solid rgba(0,255,136,0.2); border-radius:4px;
+  padding:10px 12px; font-size:11px; color:var(--accent);
+  font-family:'Share Tech Mono',monospace; outline:none;
   transition:border-color 0.2s; margin-top:10px;
 }
-.hash-input:focus { border-color:rgba(0,232,122,0.7); }
-.hash-input::placeholder { color:var(--muted); }
+.hash-inp:focus { border-color:rgba(0,255,136,0.6); }
+.hash-inp::placeholder { color:var(--muted); }
 
-/* ── BUTTONS ── */
+/* Buttons */
 .btn {
-  width:100%; padding:14px;
-  border-radius:12px; border:none; cursor:pointer;
-  font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600;
-  transition:all 0.18s; margin-top:8px;
+  width:100%; padding:13px;
+  border-radius:4px; border:none; cursor:pointer;
+  font-family:'Share Tech Mono',monospace; font-size:12px;
+  transition:all 0.15s; margin-top:8px; letter-spacing:1px;
   display:flex; align-items:center; justify-content:center; gap:6px;
 }
-.btn-primary {
-  background:linear-gradient(135deg, #00c864, #00e87a);
-  color:#000;
-}
-.btn-primary:active { transform:scale(0.97); }
-.btn-secondary {
-  background:rgba(47,128,237,0.12); border:1px solid rgba(47,128,237,0.3);
-  color:var(--accent2);
-}
-.btn-gold {
-  background:linear-gradient(135deg, rgba(247,201,72,0.15), rgba(247,201,72,0.08));
-  border:1px solid rgba(247,201,72,0.3); color:var(--accent3);
-}
-.btn:disabled { opacity:0.5; pointer-events:none; }
+.btn-green { background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.3); color:var(--accent); }
+.btn-green:active { background:rgba(0,255,136,0.2); transform:scale(0.98); }
+.btn-blue { background:rgba(0,102,255,0.1); border:1px solid rgba(0,102,255,0.3); color:#4499ff; }
+.btn-gold { background:rgba(255,204,0,0.08); border:1px solid rgba(255,204,0,0.25); color:#ffcc00; }
+.btn:disabled { opacity:0.4; pointer-events:none; }
 
-/* ── STATUS ── */
-.status-badge {
+.verify-status { font-size:11px; color:var(--muted); text-align:center; margin-top:8px; min-height:16px; }
+
+/* ── PROFILE SCREEN ── */
+.profile { padding: 0 12px 12px; }
+
+.prof-hero {
+  padding: 20px 0 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.prof-logo { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(0,255,136,0.3); box-shadow: 0 0 24px rgba(0,255,136,0.15); }
+.prof-name { font-family:'Unbounded',sans-serif; font-size:16px; font-weight:900; color:var(--text); }
+.prof-id { font-size:10px; color:var(--muted); margin-top:2px; letter-spacing:1px; }
+
+.status-chip {
   display:inline-flex; align-items:center; gap:6px;
-  background:rgba(0,232,122,0.08); border:1px solid rgba(0,232,122,0.2);
-  color:var(--accent); font-size:10px; padding:4px 12px; border-radius:20px;
+  padding:4px 12px; border-radius:2px; font-size:10px; letter-spacing:1px;
+}
+.status-chip.active { background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.25); color:var(--accent); }
+.status-chip.inactive { background:rgba(255,34,68,0.08); border:1px solid rgba(255,34,68,0.25); color:var(--red); }
+.status-dot { width:6px; height:6px; border-radius:50%; }
+.status-chip.active .status-dot { background:var(--accent); animation:pulse 2s infinite; }
+.status-chip.inactive .status-dot { background:var(--red); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.prof-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+.prof-stat {
+  background:var(--card); border:1px solid var(--border); border-radius:4px;
+  padding:14px 12px; text-align:center;
+}
+.prof-stat-n { font-family:'Unbounded',sans-serif; font-size:24px; font-weight:900; color:var(--accent); }
+.prof-stat-l { font-size:9px; color:var(--muted); margin-top:4px; letter-spacing:1px; text-transform:uppercase; }
+
+.section-label {
+  font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase;
+  margin-bottom:8px; margin-top:4px;
 }
 
-.info-text { font-size:11px; color:var(--muted); line-height:1.6; }
-.highlight { color:var(--accent); font-weight:600; }
-.section-title {
-  font-family:'Unbounded',sans-serif; font-size:10px; font-weight:700;
-  color:var(--muted); text-transform:uppercase; letter-spacing:2px;
-  margin-bottom:12px;
+.ref-box {
+  background:var(--card); border:1px solid var(--border); border-radius:4px;
+  padding:12px; margin-bottom:10px;
+}
+.ref-link-text {
+  font-size:11px; color:var(--accent); word-break:break-all;
+  line-height:1.6; background:rgba(0,0,0,0.3); border-radius:2px;
+  padding:8px 10px; margin-top:6px; cursor:pointer;
 }
 
-.success-screen {
-  text-align:center; padding:40px 16px;
+.sub-detail {
+  background:var(--card); border:1px solid var(--border); border-radius:4px;
+  padding:12px; margin-bottom:10px;
 }
-.success-icon { font-size:60px; margin-bottom:16px; }
-.success-title {
-  font-family:'Unbounded',sans-serif; font-size:20px; font-weight:900;
-  color:var(--accent); margin-bottom:8px;
-}
-.success-sub { font-size:13px; color:var(--muted); line-height:1.6; }
+.sub-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); }
+.sub-row:last-child { border:none; }
+.sub-key { font-size:10px; color:var(--muted); }
+.sub-val { font-size:11px; color:var(--text); }
+.sub-val.green { color:var(--accent); }
+.sub-val.red { color:var(--red); }
 </style>
 </head>
 <body>
+<script>
+// Logo as data URI - loaded from server
+const LOGO_SRC = '/logo.jpg';
+</script>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="logo">
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-      <text x="16" y="12" text-anchor="middle" font-family="'Unbounded'" font-weight="900" font-size="7" fill="#00e87a" letter-spacing="0.5">РКН</text>
-      <line x1="5" y1="16" x2="27" y2="16" stroke="#00e87a" stroke-width="0.6" opacity="0.4"/>
-      <text x="16" y="23" text-anchor="middle" font-family="'Unbounded'" font-weight="900" font-size="7" fill="#ffffff" letter-spacing="0.5">НЕТ</text>
-    </svg>
-  </div>
-  <div class="header-text">
-    <div class="header-name">РКН.НЕТ</div>
-    <div class="header-sub"><div class="dot"></div>онлайн 24/7</div>
-  </div>
-  <div id="sub-badge" style="display:none">
-    <div class="status-badge">✓ активен</div>
-  </div>
-</div>
+<!-- ── FEED ── -->
+<div class="screen active" id="screen-feed">
 
-<!-- TABS -->
-<div class="tabs">
-  <button class="tab active" onclick="showTab('home')">Главная</button>
-  <button class="tab" onclick="showTab('promo')">Подписка</button>
-  <button class="tab" onclick="showTab('why')">Почему мы</button>
-  <button class="tab" onclick="showTab('howto')">Как подключить</button>
-  <button class="tab" onclick="showTab('ref')">Реферал</button>
-</div>
-
-<!-- ── HOME ── -->
-<div class="screen active" id="screen-home">
-  <div class="card" style="text-align:center;padding:24px 16px">
-    <div style="font-family:'Unbounded',sans-serif;font-size:11px;color:var(--muted);letter-spacing:2px;margin-bottom:12px">РКН СКАЗАЛ НЕЛЬЗЯ</div>
-    <div style="font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900;color:var(--accent);line-height:1.2">Мы говорим<br>— можно.</div>
-    <div style="font-size:11px;color:var(--muted);margin-top:12px;line-height:1.7">
-      Пока все VPN блокируют — мы работаем.<br>
-      Пока другие тормозят — у нас летает.
+  <div class="feed-header">
+    <img class="logo-img" src="/logo.jpg" onerror="this.style.display='none'" alt="РКН.НЕТ">
+    <div>
+      <div class="feed-title">РКН.НЕТ</div>
+      <div class="feed-sub">// СВОБОДНЫЙ ИНТЕРНЕТ</div>
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-    <div class="card" style="margin:0;text-align:center">
-      <div style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900;color:var(--accent)" id="home-total">—</div>
-      <div style="font-size:9px;color:var(--muted);margin-top:3px">уже с нами</div>
-    </div>
-    <div class="card" style="margin:0;text-align:center">
-      <div style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900;color:var(--accent3)" id="home-countdown">10 апр</div>
-      <div style="font-size:9px;color:var(--muted);margin-top:3px">запуск</div>
-    </div>
-  </div>
+  <div class="feed">
 
-  <button class="btn btn-gold" onclick="showTab('promo')">🎁 Предподписка 12 USDT/год</button>
-  <button class="btn btn-secondary" onclick="showTab('why')">🔥 Почему лучше VPN</button>
-</div>
-
-<!-- ── PROMO ── -->
-<div class="screen" id="screen-promo">
-  <div class="promo-hero">
-    <div class="promo-label">⚡ Early Access</div>
-    <div class="promo-price">12 USDT</div>
-    <div class="promo-period">/ год</div>
-    <div class="promo-strike">обычная цена: 36 USDT/год</div>
-    <div class="promo-save">💰 экономия 67%</div>
-  </div>
-
-  <div class="section-title">до запуска</div>
-  <div class="countdown">
-    <div class="cd-unit"><div class="cd-num" id="cd-d">--</div><div class="cd-lbl">дней</div></div>
-    <div class="cd-unit"><div class="cd-num" id="cd-h">--</div><div class="cd-lbl">часов</div></div>
-    <div class="cd-unit"><div class="cd-num" id="cd-m">--</div><div class="cd-lbl">минут</div></div>
-    <div class="cd-unit"><div class="cd-num" id="cd-s">--</div><div class="cd-lbl">секунд</div></div>
-  </div>
-
-  <div class="card">
-    <div class="section-title">что получаешь</div>
-    <div class="feat-list">
-      <div class="feat-item"><div class="feat-icon">✓</div><div><div class="feat-text">Доступ с первого дня запуска 10 апреля</div></div></div>
-      <div class="feat-item"><div class="feat-icon">✓</div><div><div class="feat-text">Все заблокированные сайты — Instagram, YouTube, X, TikTok...</div></div></div>
-      <div class="feat-item"><div class="feat-icon">✓</div><div><div class="feat-text">До 5 устройств одновременно</div></div></div>
-      <div class="feat-item"><div class="feat-icon">✓</div><div><div class="feat-text">Безлимитный трафик</div></div></div>
-      <div class="feat-item"><div class="feat-icon">✓</div><div><div class="feat-text">Цена заморожена на весь год</div></div></div>
-    </div>
-  </div>
-
-  <div id="payment-section">
-    <div class="card">
-      <div class="section-title">оплата</div>
-      <div class="wallet-box">
-        <div class="wallet-label">USDT TRC-20 кошелёк</div>
-        <div class="wallet-addr" id="wallet-addr" onclick="copyWallet()">TNnCZrgSQwEgWKViC1eci2MxCMdsoqTWVu</div>
-        <button class="btn btn-secondary" style="margin-top:10px" onclick="copyWallet()">📋 Скопировать адрес</button>
-      </div>
-      <div class="info-text" style="margin-top:8px">
-        Отправь ровно <span class="highlight">12 USDT</span> на кошелёк выше, затем вставь хэш транзакции:
-      </div>
-      <input class="hash-input" id="hash-input" placeholder="Вставь хэш транзакции (txid)..." />
-      <button class="btn btn-primary" id="verify-btn" onclick="verifyPayment()">🔍 Проверить оплату</button>
-      <div id="verify-status" style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center"></div>
-    </div>
-  </div>
-
-  <div id="paid-section" style="display:none">
-    <div class="success-screen">
-      <div class="success-icon">🎉</div>
-      <div class="success-title">Ты в списке!</div>
-      <div class="success-sub">10 апреля в 10:00 получишь конфиг прямо в бот.<br>Осталось совсем немного!</div>
-      <button class="btn btn-secondary" style="margin-top:24px" onclick="showTab('howto')">📱 Как подключиться</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── WHY ── -->
-<div class="screen" id="screen-why">
-  <div class="card">
-    <div class="card-title">VLESS Reality vs обычный VPN</div>
-    <div class="compare">
-      <div class="compare-col bad">
-        <div class="compare-head">❌ Обычный VPN</div>
-        <div class="compare-item">● Виден как VPN</div>
-        <div class="compare-item">● Блокируется ТСПУ</div>
-        <div class="compare-item">● Тормозит видео</div>
-        <div class="compare-item">● Отваливается</div>
-      </div>
-      <div class="compare-col good">
-        <div class="compare-head">✅ VLESS Reality</div>
-        <div class="compare-item">● Выглядит как HTTPS</div>
-        <div class="compare-item">● Не блокируется</div>
-        <div class="compare-item">● Полная скорость</div>
-        <div class="compare-item">● Стабильно 24/7</div>
+    <!-- PROMO -->
+    <div class="block gold">
+      <div class="block-head">⚡ ПРЕДПОДПИСКА</div>
+      <div class="block-body">
+        <div class="promo-hero">
+          <div class="promo-tag">// EARLY ACCESS</div>
+          <div class="promo-price">12 USDT</div>
+          <div class="promo-yr">/ год</div>
+          <div class="promo-was">обычная цена: 36 USDT/год</div>
+          <div class="promo-save">ЭКОНОМИЯ 67%</div>
+        </div>
+        <div class="cd">
+          <div class="cd-u"><div class="cd-n" id="cd-d">--</div><div class="cd-l">ДНЕЙ</div></div>
+          <div class="cd-u"><div class="cd-n" id="cd-h">--</div><div class="cd-l">ЧАСОВ</div></div>
+          <div class="cd-u"><div class="cd-n" id="cd-m">--</div><div class="cd-l">МИН</div></div>
+          <div class="cd-u"><div class="cd-n" id="cd-s">--</div><div class="cd-l">СЕК</div></div>
+        </div>
+        <div id="pay-section">
+          <div class="wallet">
+            <div class="wallet-lbl">USDT TRC-20</div>
+            <div class="wallet-addr" onclick="copyWallet()">TNnCZrgSQwEgWKViC1eci2MxCMdsoqTWVu</div>
+          </div>
+          <div class="block-text" style="margin-top:8px">Отправь ровно <span class="hl">12 USDT</span> и вставь хэш транзакции:</div>
+          <input class="hash-inp" id="hash-input" placeholder="Хэш транзакции (txid)...">
+          <button class="btn btn-green" id="verify-btn" onclick="verifyPayment()">// ПРОВЕРИТЬ ОПЛАТУ</button>
+          <div class="verify-status" id="verify-status"></div>
+          <button class="btn btn-blue" onclick="copyWallet()">// СКОПИРОВАТЬ АДРЕС</button>
+        </div>
+        <div id="paid-section" style="display:none;text-align:center;padding:16px 0">
+          <div style="font-size:28px;margin-bottom:8px">✓</div>
+          <div style="font-family:'Unbounded',sans-serif;font-size:14px;color:var(--accent)">ТЫ В СПИСКЕ</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">10 апреля в 10:00 получишь конфиг в бот</div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="card">
-    <div class="card-title">Как это работает?</div>
-    <div class="info-text">
-      Твой трафик маскируется под обращение к обычному сайту. Роскомнадзор видит обычный HTTPS и пропускает. Ни один DPI-фильтр не может определить что это VPN.
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="section-title">скорость</div>
-    <div class="speed-row">
-      <div class="speed-label">Instagram</div>
-      <div class="speed-track"><div class="speed-fill" id="sp1"></div></div>
-      <div class="speed-val">98 Мбит</div>
-    </div>
-    <div class="speed-row">
-      <div class="speed-label">YouTube 4K</div>
-      <div class="speed-track"><div class="speed-fill" id="sp2"></div></div>
-      <div class="speed-val">85 Мбит</div>
-    </div>
-    <div class="speed-row">
-      <div class="speed-label">Reels/TikTok</div>
-      <div class="speed-track"><div class="speed-fill" id="sp3"></div></div>
-      <div class="speed-val">95 Мбит</div>
-    </div>
-    <div class="speed-row">
-      <div class="speed-label">Ping</div>
-      <div class="speed-track"><div class="speed-fill" id="sp4" style="background:linear-gradient(90deg,#f7c948,#00e87a)"></div></div>
-      <div class="speed-val">32 мс</div>
-    </div>
-  </div>
-
-  <button class="btn btn-gold" onclick="showTab('promo')">🎁 Хочу предподписку</button>
-</div>
-
-<!-- ── HOW TO ── -->
-<div class="screen" id="screen-howto">
-  <div class="card">
-    <div class="card-title">Подключение за 3 шага</div>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-body">
-          <div class="step-title">Скачай приложение</div>
-          <div class="app-badges">
-            <div class="app-badge">🍎 Streisand (iPhone)</div>
-            <div class="app-badge">🤖 V2rayNG (Android)</div>
-            <div class="app-badge">💻 V2rayN (Windows)</div>
+    <!-- WHY -->
+    <div class="block red">
+      <div class="block-head">// ПОЧЕМУ НЕ VPN</div>
+      <div class="block-body">
+        <div class="block-text">Обычный VPN виден как VPN. ТСПУ его блокирует. Наш протокол — нет.</div>
+        <div class="cmp">
+          <div class="cmp-col bad">
+            <div class="cmp-head">❌ VPN</div>
+            <div class="cmp-row">виден как VPN</div>
+            <div class="cmp-row">блокируется ТСПУ</div>
+            <div class="cmp-row">тормозит видео</div>
+            <div class="cmp-row">отваливается</div>
+          </div>
+          <div class="cmp-col good">
+            <div class="cmp-head">✓ VLESS</div>
+            <div class="cmp-row">выглядит как HTTPS</div>
+            <div class="cmp-row">не блокируется</div>
+            <div class="cmp-row">полная скорость</div>
+            <div class="cmp-row">стабильно 24/7</div>
           </div>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-body">
-          <div class="step-title">Получи конфиг</div>
-          <div class="step-desc">После оплаты 10 апреля получишь ссылку-конфиг прямо в бот. Выглядит как длинная строка vless://...</div>
-        </div>
+    </div>
+
+    <!-- SPEED -->
+    <div class="block">
+      <div class="block-head">⚡ СКОРОСТЬ</div>
+      <div class="block-body">
+        <div class="spd-row"><div class="spd-lbl">Instagram</div><div class="spd-track"><div class="spd-fill" id="sp1"></div></div><div class="spd-val">98 Мбит</div></div>
+        <div class="spd-row"><div class="spd-lbl">YouTube 4K</div><div class="spd-track"><div class="spd-fill" id="sp2"></div></div><div class="spd-val">85 Мбит</div></div>
+        <div class="spd-row"><div class="spd-lbl">Reels/TikTok</div><div class="spd-track"><div class="spd-fill" id="sp3"></div></div><div class="spd-val">95 Мбит</div></div>
+        <div class="spd-row"><div class="spd-lbl">Ping</div><div class="spd-track"><div class="spd-fill" id="sp4" style="background:linear-gradient(90deg,#ffcc00,#00ff88)"></div></div><div class="spd-val">32 мс</div></div>
+        <div class="block-text" style="margin-top:8px;color:var(--muted)">Reels, сторис, видео — без буферизации.</div>
       </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-body">
-          <div class="step-title">Подключись</div>
-          <div class="step-desc">Скопируй ссылку → вставь в приложение → нажми «Подключить». Всё. Весь интернет открыт.</div>
+    </div>
+
+    <!-- HOW TO -->
+    <div class="block blue">
+      <div class="block-head">// КАК ПОДКЛЮЧИТЬСЯ</div>
+      <div class="block-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div><div class="step-t">Скачай приложение</div>
+              <div class="tags">
+                <div class="tag">Streisand (iPhone)</div>
+                <div class="tag">V2rayNG (Android)</div>
+                <div class="tag">V2rayN (Windows)</div>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div><div class="step-t">Получи конфиг</div><div class="step-d">После оплаты 10 апреля конфиг придёт прямо в бот</div></div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div><div class="step-t">Подключись</div><div class="step-d">Вставь ссылку в приложение → нажми подключить → <span style="color:var(--accent)">весь интернет открыт</span></div></div>
+          </div>
+        </div>
+        <div class="tags" style="margin-top:10px">
+          <div class="tag">Instagram</div><div class="tag">YouTube</div>
+          <div class="tag">TikTok</div><div class="tag">X/Twitter</div>
+          <div class="tag">Facebook</div><div class="tag">Threads</div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="card">
-    <div class="section-title">что открывается</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px">
-      <div class="app-badge">Instagram</div>
-      <div class="app-badge">YouTube</div>
-      <div class="app-badge">TikTok</div>
-      <div class="app-badge">X / Twitter</div>
-      <div class="app-badge">Facebook</div>
-      <div class="app-badge">Threads</div>
-      <div class="app-badge">И всё остальное</div>
+    <!-- FAQ -->
+    <div class="block">
+      <div class="block-head">// FAQ</div>
+      <div class="block-body">
+        <div class="faq-item">
+          <div class="faq-q">Это законно?</div>
+          <div class="faq-a">Использование VPN в России не запрещено для пользователей. Пользуются миллионы.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Чем отличается от VPN?</div>
+          <div class="faq-a">VLESS Reality маскируется под HTTPS — ТСПУ не может его заблокировать.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Сколько устройств?</div>
+          <div class="faq-a">До 5 одновременно: телефон, планшет, ноутбук, ПК, роутер.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Что если не понравится?</div>
+          <div class="faq-a">После запуска 3 дня на тест. Не работает — возвращаем деньги.</div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <button class="btn btn-gold" onclick="showTab('promo')">🎁 Оформить подписку</button>
+  </div>
 </div>
 
-<!-- ── REF ── -->
-<div class="screen" id="screen-ref">
-  <div class="card" style="text-align:center;padding:20px">
-    <div style="font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;margin-bottom:6px">Реферальная программа</div>
-    <div class="info-text">Приводи друзей — получай бесплатные месяцы</div>
-  </div>
+<!-- ── PROFILE ── -->
+<div class="screen" id="screen-profile">
+  <div class="profile">
 
-  <div class="card">
-    <div class="section-title">твоя ссылка</div>
-    <div class="ref-link-box" id="ref-link" onclick="copyRef()">Загрузка...</div>
-    <button class="btn btn-secondary" onclick="copyRef()">📋 Скопировать ссылку</button>
-  </div>
-
-  <div class="card">
-    <div class="section-title">статистика</div>
-    <div class="ref-stats">
-      <div class="ref-stat">
-        <div class="ref-stat-num" id="ref-count">0</div>
-        <div class="ref-stat-lbl">приглашено</div>
-      </div>
-      <div class="ref-stat">
-        <div class="ref-stat-num" id="ref-free" style="color:var(--accent3)">0</div>
-        <div class="ref-stat-lbl">бесплатных мес.</div>
+    <div class="prof-hero">
+      <img class="prof-logo" src="/logo.jpg" onerror="this.style.display='none'" alt="">
+      <div class="prof-name">РКН.НЕТ</div>
+      <div class="prof-id" id="prof-id">ID: —</div>
+      <div id="status-chip" class="status-chip inactive">
+        <div class="status-dot"></div>
+        <span id="status-text">НЕТ ПОДПИСКИ</span>
       </div>
     </div>
-  </div>
 
-  <div class="card">
-    <div class="section-title">как работает</div>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-body"><div class="step-title">Отправляешь ссылку другу</div></div>
+    <div class="prof-grid">
+      <div class="prof-stat">
+        <div class="prof-stat-n" id="prof-total">—</div>
+        <div class="prof-stat-l">всего с нами</div>
       </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-body"><div class="step-title">Друг оформляет подписку</div></div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-body">
-          <div class="step-title" style="color:var(--accent)">+1 месяц бесплатно</div>
-          <div class="step-desc">за каждого оплатившего друга</div>
-        </div>
+      <div class="prof-stat">
+        <div class="prof-stat-n" id="prof-refs">0</div>
+        <div class="prof-stat-l">рефералов</div>
       </div>
     </div>
+
+    <!-- Subscription details -->
+    <div class="section-label">// ПОДПИСКА</div>
+    <div class="sub-detail" id="sub-detail">
+      <div class="sub-row">
+        <div class="sub-key">СТАТУС</div>
+        <div class="sub-val red" id="sub-status">НЕАКТИВНА</div>
+      </div>
+      <div class="sub-row">
+        <div class="sub-key">ТАРИФ</div>
+        <div class="sub-val" id="sub-plan">—</div>
+      </div>
+      <div class="sub-row">
+        <div class="sub-key">ДОСТУП ДО</div>
+        <div class="sub-val" id="sub-expires">10 APR 2027</div>
+      </div>
+      <div class="sub-row">
+        <div class="sub-key">УСТРОЙСТВ</div>
+        <div class="sub-val">до 5</div>
+      </div>
+      <div class="sub-row" style="border:none">
+        <div class="sub-key">БОН. МЕСЯЦЕВ</div>
+        <div class="sub-val green" id="sub-bonus">0</div>
+      </div>
+    </div>
+
+    <!-- Referral -->
+    <div class="section-label">// РЕФЕРАЛЬНАЯ ПРОГРАММА</div>
+    <div class="ref-box">
+      <div class="block-text">За каждого оплатившего друга — <span class="hl">+1 месяц бесплатно</span></div>
+      <div class="ref-link-text" id="ref-link" onclick="copyRef()">Загрузка...</div>
+      <button class="btn btn-green" onclick="copyRef()">// СКОПИРОВАТЬ ССЫЛКУ</button>
+    </div>
+
+    <div id="no-sub-block">
+      <div class="section-label">// ОФОРМИТЬ ПОДПИСКУ</div>
+      <button class="btn btn-gold" onclick="showFeed(); scrollToPromo()">// ПЕРЕЙТИ К ОПЛАТЕ</button>
+    </div>
+
   </div>
+</div>
+
+<!-- ── BOTTOM NAV ── -->
+<div class="nav">
+  <button class="nav-btn active" id="nav-feed" onclick="showFeed()">
+    <div class="nav-icon">◈</div>
+    <div class="nav-label">ЛЕНТА</div>
+  </button>
+  <button class="nav-btn" id="nav-profile" onclick="showProfile()">
+    <div class="nav-icon">◉</div>
+    <div class="nav-label">ПРОФИЛЬ</div>
+  </button>
 </div>
 
 <script>
 const tg = window.Telegram?.WebApp;
-if (tg) { tg.ready(); tg.expand(); }
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#05050a'); tg.setBackgroundColor('#05050a'); }
 
 const userId = tg?.initDataUnsafe?.user?.id
   || new URLSearchParams(location.search).get('uid')
   || 'guest';
-
-const refCode = new URLSearchParams(location.search).get('ref') || null;
+const tgUser = tg?.initDataUnsafe?.user;
 const BOT_USERNAME = 'rkn_net_bot';
 const WALLET = 'TNnCZrgSQwEgWKViC1eci2MxCMdsoqTWVu';
 
-// ── TABS ──
-function showTab(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-  const tabs = ['home','promo','why','howto','ref'];
-  document.querySelectorAll('.tab')[tabs.indexOf(name)]?.classList.add('active');
-  if (name === 'why') animateSpeeds();
-  if (name === 'ref') loadRefData();
-  window.scrollTo(0, 0);
+// ── NAVIGATION ──
+function showFeed() {
+  document.getElementById('screen-feed').classList.add('active');
+  document.getElementById('screen-profile').classList.remove('active');
+  document.getElementById('nav-feed').classList.add('active');
+  document.getElementById('nav-profile').classList.remove('active');
+  animateSpeeds();
 }
 
-// Определяем начальный экран из URL
-const initScreen = new URLSearchParams(location.search).get('screen');
-if (initScreen) showTab(initScreen);
+function showProfile() {
+  document.getElementById('screen-profile').classList.add('active');
+  document.getElementById('screen-feed').classList.remove('active');
+  document.getElementById('nav-profile').classList.add('active');
+  document.getElementById('nav-feed').classList.remove('active');
+  loadProfile();
+}
+
+function scrollToPromo() {
+  setTimeout(() => document.querySelector('.block.gold')?.scrollIntoView({behavior:'smooth'}), 100);
+}
 
 // ── COUNTDOWN ──
-function updateCountdown() {
-  const target = new Date('2026-04-10T10:00:00');
-  const diff = target - new Date();
+function updateCD() {
+  const diff = new Date('2026-04-10T10:00:00') - new Date();
   if (diff <= 0) return;
-  const d = Math.floor(diff / 86400000);
-  const h = Math.floor((diff % 86400000) / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
-  ['cd-d','cd-h','cd-m','cd-s'].forEach((id, i) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = String([d,h,m,s][i]).padStart(2,'0');
-  });
-  const el = document.getElementById('home-countdown');
-  if (el) el.textContent = `${d}д ${h}ч`;
+  const d = Math.floor(diff/86400000);
+  const h = Math.floor((diff%86400000)/3600000);
+  const m = Math.floor((diff%3600000)/60000);
+  const s = Math.floor((diff%60000)/1000);
+  document.getElementById('cd-d').textContent = String(d).padStart(2,'0');
+  document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+  document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+  document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
 }
-updateCountdown();
-setInterval(updateCountdown, 1000);
+updateCD(); setInterval(updateCD, 1000);
 
-// ── LOAD USER DATA ──
-async function loadUserData() {
-  try {
-    const r = await fetch(`/api/user/${userId}`);
-    const data = await r.json();
-    const el = document.getElementById('home-total');
-    if (el) animateNum(el, data.total || 0);
-    if (data.paid) {
-      document.getElementById('sub-badge').style.display = 'block';
-      document.getElementById('payment-section').style.display = 'none';
-      document.getElementById('paid-section').style.display = 'block';
-    }
-  } catch(e) {
-    const el = document.getElementById('home-total');
-    if (el) el.textContent = '50+';
-  }
-}
-loadUserData();
-
-function animateNum(el, target) {
-  let n = 0;
-  const step = Math.max(1, Math.floor(target / 40));
-  const t = setInterval(() => {
-    n = Math.min(n + step, target);
-    el.textContent = n;
-    if (n >= target) clearInterval(t);
-  }, 30);
-}
-
-// ── SPEED BARS ──
-let speedAnimated = false;
+// ── SPEEDS ──
+let speedsDone = false;
 function animateSpeeds() {
-  if (speedAnimated) return;
-  speedAnimated = true;
+  if (speedsDone) return; speedsDone = true;
   setTimeout(() => {
     [['sp1','98%'],['sp2','85%'],['sp3','95%'],['sp4','32%']].forEach(([id,w]) => {
-      const el = document.getElementById(id);
-      if (el) el.style.width = w;
+      const el = document.getElementById(id); if(el) el.style.width = w;
     });
-  }, 100);
+  }, 200);
 }
+setTimeout(animateSpeeds, 500);
 
 // ── COPY WALLET ──
 function copyWallet() {
   navigator.clipboard.writeText(WALLET).catch(()=>{});
-  if (tg) tg.showPopup({ message: 'Адрес скопирован!', buttons:[{type:'ok'}] });
+  if (tg) tg.showPopup({message:'Адрес скопирован!', buttons:[{type:'ok'}]});
+  else alert('Скопировано!');
 }
 
-// ── VERIFY PAYMENT ──
+// ── VERIFY ──
 async function verifyPayment() {
   const hash = document.getElementById('hash-input').value.trim();
   const btn = document.getElementById('verify-btn');
   const status = document.getElementById('verify-status');
-
-  if (hash.length < 60) {
-    status.style.color = 'var(--danger)';
-    status.textContent = '⚠️ Это не похоже на хэш. Проверь и попробуй снова.';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Проверяю...';
-  status.style.color = 'var(--muted)';
-  status.textContent = 'Запрос к блокчейну Tron...';
-
+  if (hash.length < 60) { status.style.color='var(--red)'; status.textContent='⚠ Это не похоже на хэш транзакции'; return; }
+  btn.disabled = true; btn.textContent = '// ПРОВЕРЯЮ...';
+  status.style.color = 'var(--muted)'; status.textContent = 'Запрос к блокчейну Tron...';
   try {
     const r = await fetch('/api/verify', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ hash, userId, refCode })
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ hash, userId, refCode: new URLSearchParams(location.search).get('ref') })
     });
     const data = await r.json();
-
     if (data.ok) {
-      document.getElementById('payment-section').style.display = 'none';
+      document.getElementById('pay-section').style.display = 'none';
       document.getElementById('paid-section').style.display = 'block';
-      document.getElementById('sub-badge').style.display = 'block';
-      animateNum(document.getElementById('home-total'), data.total || 0);
     } else {
       const msgs = {
-        not_found: '❌ Транзакция не найдена. Подожди 1-2 минуты и попробуй снова.',
-        not_confirmed: '⏳ Ещё не подтверждена. Подожди пару минут.',
-        wrong_amount: `❌ Сумма: ${data.amount?.toFixed(2)} USDT. Нужно ровно 12 USDT.`,
-        hash_used: '❌ Этот хэш уже использован.',
-        already_paid: '✅ Ты уже в списке!',
-        error: '⚠️ Ошибка соединения. Попробуй ещё раз.',
+        not_found:'❌ Транзакция не найдена. Подожди 1-2 мин и попробуй снова.',
+        not_confirmed:'⏳ Ещё не подтверждена. Подожди пару минут.',
+        wrong_amount:`❌ Сумма: ${data.amount?.toFixed(2)} USDT. Нужно 12 USDT.`,
+        hash_used:'❌ Хэш уже использован.',
+        already_paid:'✓ Ты уже в списке!',
+        error:'⚠ Ошибка соединения. Попробуй снова.',
       };
-      status.style.color = 'var(--danger)';
+      status.style.color = 'var(--red)';
       status.textContent = msgs[data.status] || msgs.error;
-      btn.disabled = false;
-      btn.textContent = '🔍 Проверить оплату';
+      btn.disabled = false; btn.textContent = '// ПРОВЕРИТЬ ОПЛАТУ';
     }
   } catch(e) {
-    status.style.color = 'var(--danger)';
-    status.textContent = '⚠️ Ошибка соединения. Попробуй ещё раз.';
-    btn.disabled = false;
-    btn.textContent = '🔍 Проверить оплату';
+    status.style.color='var(--red)'; status.textContent='⚠ Ошибка. Попробуй снова.';
+    btn.disabled=false; btn.textContent='// ПРОВЕРИТЬ ОПЛАТУ';
   }
 }
 
-// ── REF ──
-async function loadRefData() {
+// ── PROFILE ──
+async function loadProfile() {
+  const profId = document.getElementById('prof-id');
+  if (tgUser) profId.textContent = `@${tgUser.username || userId}`;
+  else profId.textContent = `ID: ${userId}`;
+
+  const myCode = `RKN${String(userId).slice(-5)}`;
+  const link = `https://t.me/${BOT_USERNAME}?start=${myCode}`;
+  document.getElementById('ref-link').textContent = link;
+
   try {
     const r = await fetch(`/api/user/${userId}`);
     const data = await r.json();
-    const myCode = data.refCode || `RKN${String(userId).slice(-5)}`;
-    const link = `https://t.me/${BOT_USERNAME}?start=${myCode}`;
-    document.getElementById('ref-link').textContent = link;
-    document.getElementById('ref-count').textContent = data.refs || 0;
-    document.getElementById('ref-free').textContent = data.free || 0;
+    const totalEl = document.getElementById('prof-total');
+    let n = 0;
+    const ti = setInterval(() => { n = Math.min(n+2, data.total||0); totalEl.textContent=n; if(n>=(data.total||0)) clearInterval(ti); }, 30);
+    document.getElementById('prof-refs').textContent = data.refs || 0;
+    document.getElementById('sub-bonus').textContent = data.free || 0;
+    if (data.paid) {
+      document.getElementById('status-chip').className = 'status-chip active';
+      document.getElementById('status-text').textContent = 'АКТИВНА';
+      document.getElementById('sub-status').textContent = 'АКТИВНА';
+      document.getElementById('sub-status').className = 'sub-val green';
+      document.getElementById('sub-plan').textContent = 'EARLY ACCESS / ГОД';
+      document.getElementById('no-sub-block').style.display = 'none';
+    }
+    if (data.refCode) {
+      const refLink = `https://t.me/${BOT_USERNAME}?start=${data.refCode}`;
+      document.getElementById('ref-link').textContent = refLink;
+    }
   } catch(e) {}
 }
 
+// ── COPY REF ──
 function copyRef() {
   const text = document.getElementById('ref-link').textContent;
   navigator.clipboard.writeText(text).catch(()=>{});
-  if (tg) tg.showPopup({ message: 'Ссылка скопирована!', buttons:[{type:'ok'}] });
+  if (tg) tg.showPopup({message:'Ссылка скопирована!', buttons:[{type:'ok'}]});
+  else alert('Скопировано!');
 }
+
+// Init
+loadProfile();
 </script>
 </body>
 </html>
