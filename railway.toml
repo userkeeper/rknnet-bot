@@ -5,3 +5,6 @@ builder = "NIXPACKS"
 startCommand = "node src/server.js"
 healthcheckPath = "/"
 restartPolicyType = "ON_FAILURE"
+
+[[services]]
+internalPort = 8080
