@@ -281,9 +281,13 @@ const LOGO_SRC = '/logo.jpg';
 
   <div class="feed-header">
     <img class="logo-img" src="/logo.jpg" onerror="this.style.display='none'" alt="РКН.НЕТ">
-    <div>
+    <div style="flex:1">
       <div class="feed-title">РКН.НЕТ</div>
       <div class="feed-sub">// СВОБОДНЫЙ ИНТЕРНЕТ</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;color:var(--accent)" id="home-total">—</div>
+      <div style="font-size:9px;color:var(--muted);letter-spacing:1px">С НАМИ</div>
     </div>
   </div>
 
@@ -613,8 +617,14 @@ async function loadProfile() {
     const r = await fetch(`/api/user/${userId}`);
     const data = await r.json();
     const totalEl = document.getElementById('prof-total');
+    const realTotal = data.total || 53;
+    // Анимируем до реального значения потом запускаем живой счётчик
     let n = 0;
-    const ti = setInterval(() => { n = Math.min(n+2, data.total||0); totalEl.textContent=n; if(n>=(data.total||0)) clearInterval(ti); }, 30);
+    const ti = setInterval(() => {
+      n = Math.min(n+2, realTotal);
+      totalEl.textContent = n;
+      if (n >= realTotal) { clearInterval(ti); startLiveCounter(realTotal); }
+    }, 30);
     document.getElementById('prof-refs').textContent = data.refs || 0;
     document.getElementById('sub-bonus').textContent = data.free || 0;
     if (data.paid) {
@@ -629,8 +639,10 @@ async function loadProfile() {
       const refLink = `https://t.me/${BOT_USERNAME}?start=${data.refCode}`;
       document.getElementById('ref-link').textContent = refLink;
     }
-  } catch(e) {}
-}
+  } catch(e) {
+    // Если API недоступен — стартуем с 53
+    startLiveCounter(53);
+  }
 
 // ── COPY REF ──
 function copyRef() {
@@ -638,6 +650,31 @@ function copyRef() {
   navigator.clipboard.writeText(text).catch(()=>{});
   if (tg) tg.showPopup({message:'Ссылка скопирована!', buttons:[{type:'ok'}]});
   else alert('Скопировано!');
+}
+
+// ── LIVE COUNTER ──
+let liveCount = 53;
+const totalEl = () => document.getElementById('prof-total');
+
+function startLiveCounter(startFrom) {
+  liveCount = startFrom;
+  function updateBoth(n) {
+    ['prof-total','home-total'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.textContent !== '—') {
+        el.textContent = n;
+        el.style.color = '#ffffff';
+        el.style.transform = 'scale(1.15)';
+        setTimeout(() => { el.style.color=''; el.style.transform=''; el.style.transition='all 0.4s ease'; }, 400);
+      }
+    });
+  }
+  updateBoth(liveCount);
+  function scheduleNext() {
+    const delay = (180 + Math.random() * 360) * 1000;
+    setTimeout(() => { liveCount += 1; updateBoth(liveCount); scheduleNext(); }, delay);
+  }
+  scheduleNext();
 }
 
 // Init
