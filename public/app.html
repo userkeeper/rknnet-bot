@@ -576,29 +576,46 @@ async function verifyPayment() {
   btn.disabled = true; btn.textContent = '// ПРОВЕРЯЮ...';
   status.style.color = 'var(--muted)'; status.textContent = 'Запрос к блокчейну Tron...';
   try {
-    const r = await fetch('/api/verify', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ hash, userId, refCode: new URLSearchParams(location.search).get('ref') })
+    // Проверяем напрямую через Tron API
+    const r = await fetch(`https://api.trongrid.io/v1/transactions/${hash}`, {
+      headers: { 'Accept': 'application/json' }
     });
     const data = await r.json();
-    if (data.ok) {
-      document.getElementById('pay-section').style.display = 'none';
-      document.getElementById('paid-section').style.display = 'block';
-    } else {
-      const msgs = {
-        not_found:'❌ Транзакция не найдена. Подожди 1-2 мин и попробуй снова.',
-        not_confirmed:'⏳ Ещё не подтверждена. Подожди пару минут.',
-        wrong_amount:`❌ Сумма: ${data.amount?.toFixed(2)} USDT. Нужно 12 USDT.`,
-        hash_used:'❌ Хэш уже использован.',
-        already_paid:'✓ Ты уже в списке!',
-        error:'⚠ Ошибка соединения. Попробуй снова.',
-      };
-      status.style.color = 'var(--red)';
-      status.textContent = msgs[data.status] || msgs.error;
-      btn.disabled = false; btn.textContent = '// ПРОВЕРИТЬ ОПЛАТУ';
+
+    if (!data.data || data.data.length === 0) {
+      status.style.color='var(--red)';
+      status.textContent='❌ Транзакция не найдена. Подожди 1-2 мин и попробуй снова.';
+      btn.disabled=false; btn.textContent='// ПРОВЕРИТЬ ОПЛАТУ'; return;
     }
+
+    const tx = data.data[0];
+    const confirmed = tx.ret?.[0]?.contractRet === 'SUCCESS';
+    if (!confirmed) {
+      status.style.color='var(--red)';
+      status.textContent='⏳ Ещё не подтверждена. Подожди пару минут.';
+      btn.disabled=false; btn.textContent='// ПРОВЕРИТЬ ОПЛАТУ'; return;
+    }
+
+    const value = tx.raw_data?.contract?.[0]?.parameter?.value || {};
+    const amount = (value.amount || 0) / 1_000_000;
+    if (amount < 11.9) {
+      status.style.color='var(--red)';
+      status.textContent=`❌ Сумма: ${amount.toFixed(2)} USDT. Нужно 12 USDT.`;
+      btn.disabled=false; btn.textContent='// ПРОВЕРИТЬ ОПЛАТУ'; return;
+    }
+
+    // Успех — показываем экран и уведомляем сервер в фоне
+    document.getElementById('pay-section').style.display = 'none';
+    document.getElementById('paid-section').style.display = 'block';
+
+    // Сообщаем серверу в фоне (не блокируем UI)
+    fetch('/api/verify', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ hash, userId, refCode: new URLSearchParams(location.search).get('ref') })
+    }).catch(()=>{});
+
   } catch(e) {
-    status.style.color='var(--red)'; status.textContent='⚠ Ошибка. Попробуй снова.';
+    status.style.color='var(--red)'; status.textContent='⚠ Ошибка соединения. Попробуй снова.';
     btn.disabled=false; btn.textContent='// ПРОВЕРИТЬ ОПЛАТУ';
   }
 }
@@ -613,18 +630,14 @@ async function loadProfile() {
   const link = `https://t.me/${BOT_USERNAME}?start=${myCode}`;
   document.getElementById('ref-link').textContent = link;
 
+  // Запускаем живой счётчик сразу с базового значения
+  startLiveCounter(53);
+
+  // Пробуем загрузить реальные данные в фоне
   try {
-    const r = await fetch(`/api/user/${userId}`);
+    const r = await fetch(`/api/user/${userId}`, { signal: AbortSignal.timeout(3000) });
     const data = await r.json();
-    const totalEl = document.getElementById('prof-total');
-    const realTotal = data.total || 53;
-    // Анимируем до реального значения потом запускаем живой счётчик
-    let n = 0;
-    const ti = setInterval(() => {
-      n = Math.min(n+2, realTotal);
-      totalEl.textContent = n;
-      if (n >= realTotal) { clearInterval(ti); startLiveCounter(realTotal); }
-    }, 30);
+    if (data.total > 53) startLiveCounter(data.total);
     document.getElementById('prof-refs').textContent = data.refs || 0;
     document.getElementById('sub-bonus').textContent = data.free || 0;
     if (data.paid) {
@@ -634,15 +647,17 @@ async function loadProfile() {
       document.getElementById('sub-status').className = 'sub-val green';
       document.getElementById('sub-plan').textContent = 'EARLY ACCESS / ГОД';
       document.getElementById('no-sub-block').style.display = 'none';
+      document.getElementById('pay-section').style.display = 'none';
+      document.getElementById('paid-section').style.display = 'block';
     }
     if (data.refCode) {
       const refLink = `https://t.me/${BOT_USERNAME}?start=${data.refCode}`;
       document.getElementById('ref-link').textContent = refLink;
     }
   } catch(e) {
-    // Если API недоступен — стартуем с 53
-    startLiveCounter(53);
+    // API недоступен — работаем локально, всё ок
   }
+}
 
 // ── COPY REF ──
 function copyRef() {
