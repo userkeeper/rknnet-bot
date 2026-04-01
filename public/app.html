@@ -756,13 +756,14 @@ async function loadProfile() {
   document.getElementById('ref-link').textContent = link;
 
   // Запускаем живой счётчик сразу с базового значения
-  startLiveCounter(53);
+  startLiveCounter(174);
 
   // Пробуем загрузить реальные данные в фоне
   try {
     const r = await fetch(`/api/user/${userId}`, { signal: AbortSignal.timeout(3000) });
     const data = await r.json();
-    if (data.total > 53) startLiveCounter(data.total);
+    if (data.total > 174) startLiveCounter(data.total + getDailyBonus());
+    else startLiveCounter(174 + getDailyBonus());
     document.getElementById('prof-refs').textContent = data.refs || 0;
     document.getElementById('sub-bonus').textContent = data.free || 0;
     if (data.paid) {
@@ -793,7 +794,20 @@ function copyRef() {
 }
 
 // ── LIVE COUNTER ──
-let liveCount = 53;
+// Считаем сколько дней прошло с запуска (1 апреля 2026)
+function getDailyBonus() {
+  const start = new Date('2026-04-01T00:00:00');
+  const now = new Date();
+  const days = Math.floor((now - start) / 86400000);
+  // Каждый день добавляем от 2 до 7 человек — детерминировано по дню
+  let bonus = 0;
+  for (let i = 0; i < days; i++) {
+    bonus += 2 + (i * 3 + 7) % 6; // псевдослучайно 2-7 в день
+  }
+  return Math.max(0, bonus);
+}
+
+let liveCount = 174;
 const totalEl = () => document.getElementById('prof-total');
 
 function startLiveCounter(startFrom) {
