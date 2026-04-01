@@ -1,8 +1,8 @@
 const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
-const fs = require('fs');
 const path = require('path');
+const { Pool } = require('pg');
 
 // ── НАСТРОЙКИ ──────────────────────────────────────────────────────────────
 const TOKEN = process.env.BOT_TOKEN || '8721490853:AAHb1Z29Hxn8D2_anShDlAQXoo7H9GvMVWk';
@@ -10,79 +10,141 @@ const WALLET = 'TNnCZrgSQwEgWKViC1eci2MxCMdsoqTWVu';
 const ADMIN_ID = 7272909965;
 const PORT = process.env.PORT || 8080;
 const APP_URL = process.env.APP_URL || `http://localhost:${PORT}`;
-const DB_FILE = path.join(__dirname, '../data/subscribers.json');
-const PRICE = 12.0;
+const BOT_USERNAME = 'PKHHET_bot';
+const CRYPTO_TOKEN = process.env.CRYPTO_TOKEN || '560582:AADq82vkT1otvXocEw32prQMenhkyPg2V1s';
+const CRYPTO_API = 'https://pay.crypt.bot/api';
+const PRICE_USDT = 12;
+const PRICE_WITH_FEE = (12 * 1.03).toFixed(2); // 12.36 USDT с учётом комиссии 3%
 
-// ── БД ─────────────────────────────────────────────────────────────────────
-function loadDB() {
+// ── CRYPTOBOT API ──────────────────────────────────────────────────────────
+async function createInvoice(userId, refCode = null) {
   try {
-    if (!fs.existsSync(path.dirname(DB_FILE))) {
-      fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
-    }
-    if (fs.existsSync(DB_FILE)) {
-      return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-    }
-  } catch (e) {}
-  return { subscribers: {}, used_hashes: [] };
-}
-
-function saveDB(db) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
-}
-
-function isPaid(userId) {
-  const db = loadDB();
-  return !!db.subscribers[String(userId)];
-}
-
-function isHashUsed(hash) {
-  const db = loadDB();
-  return db.used_hashes.includes(hash);
-}
-
-function addSubscriber(userId, username, hash, refCode = null) {
-  const db = loadDB();
-  const uid = String(userId);
-  db.subscribers[uid] = {
-    username,
-    tx_hash: hash,
-    paid_at: new Date().toISOString(),
-    ref_code: refCode,
-    free_months: 0,
-    active: true,
-    my_ref_code: `RKN${uid.slice(-5)}`
-  };
-  db.used_hashes.push(hash);
-  // Начисляем реферальный месяц
-  if (refCode) {
-    for (const [, data] of Object.entries(db.subscribers)) {
-      if (data.my_ref_code === refCode) {
-        data.free_months = (data.free_months || 0) + 1;
-        break;
-      }
-    }
+    const payload = JSON.stringify({ userId, refCode });
+    const r = await axios.post(`${CRYPTO_API}/createInvoice`, {
+      asset: 'USDT',
+      amount: String(PRICE_WITH_FEE),
+      description: `РКН.НЕТ — предподписка на год (включая комиссию сервиса)`,
+      payload,
+      allow_comments: false,
+      allow_anonymous: false,
+      expires_in: 3600
+    }, {
+      headers: { 'Crypto-Pay-API-Token': CRYPTO_TOKEN }
+    });
+    if (r.data.ok) return r.data.result;
+    return null;
+  } catch(e) {
+    console.error('CryptoBot createInvoice error:', e.message);
+    return null;
   }
-  saveDB(db);
 }
 
-function getRefCode(userId) {
-  return `RKN${String(userId).slice(-5)}`;
+async function checkInvoice(invoiceId) {
+  try {
+    const r = await axios.get(`${CRYPTO_API}/getInvoices`, {
+      params: { invoice_ids: invoiceId },
+      headers: { 'Crypto-Pay-API-Token': CRYPTO_TOKEN }
+    });
+    if (r.data.ok && r.data.result.items.length > 0) {
+      return r.data.result.items[0];
+    }
+    return null;
+  } catch(e) {
+    console.error('CryptoBot checkInvoice error:', e.message);
+    return null;
+  }
 }
 
-function countReferrals(userId) {
-  const db = loadDB();
-  const code = getRefCode(userId);
-  return Object.values(db.subscribers).filter(d => d.ref_code === code).length;
+// ── POSTGRESQL ─────────────────────────────────────────────────────────────
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+});
+
+async function initDB() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS subscribers (
+        id SERIAL PRIMARY KEY,
+        user_id TEXT UNIQUE NOT NULL,
+        username TEXT,
+        tx_hash TEXT UNIQUE NOT NULL,
+        ref_code TEXT,
+        my_ref_code TEXT,
+        free_months INTEGER DEFAULT 0,
+        paid_at TIMESTAMP DEFAULT NOW(),
+        active BOOLEAN DEFAULT TRUE
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS used_hashes (
+        hash TEXT PRIMARY KEY
+      )
+    `);
+    console.log('БД инициализирована');
+  } catch (e) {
+    console.error('Ошибка БД:', e.message);
+  }
 }
 
-function getFreeMonths(userId) {
-  const db = loadDB();
-  const uid = String(userId);
-  return db.subscribers[uid]?.free_months || 0;
+async function isPaid(userId) {
+  try {
+    const r = await pool.query('SELECT 1 FROM subscribers WHERE user_id=$1', [String(userId)]);
+    return r.rows.length > 0;
+  } catch(e) { return false; }
 }
 
-function totalSubscribers() {
-  return Object.keys(loadDB().subscribers).length;
+async function isHashUsed(hash) {
+  try {
+    const r = await pool.query('SELECT 1 FROM used_hashes WHERE hash=$1', [hash]);
+    return r.rows.length > 0;
+  } catch(e) { return false; }
+}
+
+async function addSubscriber(userId, username, hash, refCode = null) {
+  const myCode = `RKN${String(userId).slice(-5)}`;
+  try {
+    await pool.query(`
+      INSERT INTO subscribers (user_id, username, tx_hash, ref_code, my_ref_code)
+      VALUES ($1,$2,$3,$4,$5)
+      ON CONFLICT (user_id) DO NOTHING
+    `, [String(userId), username, hash, refCode, myCode]);
+
+    await pool.query(`INSERT INTO used_hashes VALUES ($1) ON CONFLICT DO NOTHING`, [hash]);
+
+    // Начисляем реферальный месяц
+    if (refCode) {
+      await pool.query(`
+        UPDATE subscribers SET free_months = free_months + 1
+        WHERE my_ref_code = $1
+      `, [refCode]);
+    }
+  } catch(e) { console.error('addSubscriber error:', e.message); }
+}
+
+async function totalSubscribers() {
+  try {
+    const r = await pool.query('SELECT COUNT(*) FROM subscribers');
+    return parseInt(r.rows[0].count) || 0;
+  } catch(e) { return 0; }
+}
+
+async function getUserData(userId) {
+  try {
+    const uid = String(userId);
+    const myCode = `RKN${uid.slice(-5)}`;
+    const sub = await pool.query('SELECT * FROM subscribers WHERE user_id=$1', [uid]);
+    const refs = await pool.query('SELECT COUNT(*) FROM subscribers WHERE ref_code=$1', [myCode]);
+    const total = await totalSubscribers();
+    const paid = sub.rows.length > 0;
+    return {
+      paid,
+      refs: parseInt(refs.rows[0].count) || 0,
+      free: sub.rows[0]?.free_months || 0,
+      total,
+      refCode: myCode
+    };
+  } catch(e) { return { paid: false, refs: 0, free: 0, total: 0, refCode: `RKN${String(userId).slice(-5)}` }; }
 }
 
 // ── TRON ПРОВЕРКА ──────────────────────────────────────────────────────────
@@ -94,90 +156,226 @@ async function verifyTronTx(hash) {
     );
     if (!data.data || data.data.length === 0) return { ok: false, status: 'not_found', amount: 0 };
     const tx = data.data[0];
-    const ret = tx.ret?.[0];
-    if (ret?.contractRet !== 'SUCCESS') return { ok: false, status: 'not_confirmed', amount: 0 };
+    if (tx.ret?.[0]?.contractRet !== 'SUCCESS') return { ok: false, status: 'not_confirmed', amount: 0 };
     const value = tx.raw_data?.contract?.[0]?.parameter?.value || {};
     const amount = (value.amount || 0) / 1_000_000;
     if (amount < 11.9) return { ok: false, status: 'wrong_amount', amount };
     return { ok: true, status: 'ok', amount };
-  } catch (e) {
-    return { ok: false, status: 'error', amount: 0 };
-  }
+  } catch(e) { return { ok: false, status: 'error', amount: 0 }; }
 }
 
 // ── TELEGRAM BOT ───────────────────────────────────────────────────────────
 const bot = new TelegramBot(TOKEN, { polling: true });
+const waitingHash = new Set();
 const userRefCodes = new Map();
+
+function mainKeyboard(userId) {
+  return {
+    inline_keyboard: [
+      [{ text: '🔥 Почему лучше VPN', callback_data: 'why' }],
+      [{ text: '💳 Оплатить 12 USDT через CryptoBot', callback_data: 'pay_crypto' }],
+      [{ text: '🎁 Предподписка (Mini App)', web_app: { url: `${APP_URL}/app.html?uid=${userId}` } }],
+      [{ text: '📱 Как подключиться', callback_data: 'howto' },
+       { text: '⚡ Скорость', callback_data: 'speed' }],
+      [{ text: '❓ Вопросы', callback_data: 'faq' },
+       { text: '👥 Пригласи друга', callback_data: 'ref' }]
+    ]
+  };
+}
 
 bot.onText(/\/start(.*)/, async (msg, match) => {
   const userId = msg.from.id;
   const refCode = match[1]?.trim() || null;
   if (refCode) userRefCodes.set(userId, refCode);
-
-  const appUrl = `${APP_URL}/app.html?uid=${userId}${refCode ? `&ref=${refCode}` : ''}`;
-
   await bot.sendMessage(userId,
-    'РКН сказал нельзя\\. Мы говорим — *можно\\.*',
-    {
-      parse_mode: 'MarkdownV2',
-      reply_markup: {
-        inline_keyboard: [[
-          { text: '⚡ Открыть РКН.НЕТ', web_app: { url: appUrl } }
-        ]]
-      }
-    }
+    `👋 Привет\\! Я — бот *РКН\\.НЕТ*\n\nРКН сказал нельзя\\. Мы говорим — *можно\\.*\n\nПока все VPN блокируют — мы работаем\\.\nПока другие тормозят — у нас летает\\.`,
+    { parse_mode: 'MarkdownV2', reply_markup: mainKeyboard(userId) }
   );
 });
 
-// ── EXPRESS + MINI APP API ─────────────────────────────────────────────────
+bot.on('callback_query', async (q) => {
+  const userId = q.from.id;
+  await bot.answerCallbackQuery(q.id);
+  const edit = (text, kb) => bot.editMessageText(text, {
+    chat_id: q.message.chat.id, message_id: q.message.message_id,
+    parse_mode: 'MarkdownV2', reply_markup: kb
+  });
+  const back = { inline_keyboard: [[{ text: '← Главное меню', callback_data: 'main' }]] };
+
+  if (q.data === 'main') {
+    await edit(`👋 *РКН\\.НЕТ*\n\nРКН сказал нельзя\\. Мы говорим — *можно\\.*`, mainKeyboard(userId));
+  } else if (q.data === 'why') {
+    await edit(`🔥 *VLESS Reality vs VPN*\n\n❌ VPN виден ТСПУ — блокируется\\.\n✅ VLESS Reality выглядит как HTTPS — не блокируется\\.\n\nПолная скорость, стабильно 24/7\\.`,
+      { inline_keyboard: [[{ text: '🎁 Предподписка', web_app: { url: `${APP_URL}/app.html?uid=${userId}` } }], [{ text: '← Назад', callback_data: 'main' }]] });
+  } else if (q.data === 'howto') {
+    await edit(`📱 *Подключение за 3 шага*\n\n1\\. Скачай Streisand \\(iPhone\\) или V2rayNG \\(Android\\)\n2\\. Получи конфиг в боте после оплаты\n3\\. Вставь ссылку → подключись\n\n✅ Весь интернет открыт\\.`, back);
+  } else if (q.data === 'speed') {
+    await edit(`⚡ *Скорость*\n\nInstagram — 98 Мбит/с\nYouTube 4K — 85 Мбит/с\nPing — 32 мс\n\nReels, сторис, видео без буферизации\\.`, back);
+  } else if (q.data === 'faq') {
+    await edit(`❓ *FAQ*\n\n*Законно?* Да, для пользователей не запрещено\\.\n*Чем лучше VPN?* ТСПУ не видит VLESS Reality\\.\n*Устройств?* До 5 одновременно\\.\n*Возврат?* 3 дня на тест после запуска\\.`, back);
+  } else if (q.data === 'ref') {
+    const code = `RKN${String(userId).slice(-5)}`;
+    const link = `https://t\\.me/${BOT_USERNAME}?start=${code}`;
+    const data = await getUserData(userId);
+    await edit(`👥 *Реферальная программа*\n\nЗа каждого оплатившего друга — *\\+1 месяц бесплатно*\n\nТвоя ссылка:\n\`https://t.me/${BOT_USERNAME}?start=${code}\`\n\nПриглашено: *${data.refs}*\nБесплатных месяцев: *${data.free}*`, back);
+  } else if (q.data === 'pay_crypto') {
+    if (await isPaid(userId)) {
+      await edit(`✅ Ты уже в списке\\! Конфиг придёт 10 апреля\\.`, mainKeyboard(userId));
+      return;
+    }
+    const refCode = userRefCodes.get(userId) || null;
+    await bot.answerCallbackQuery(q.id, { text: 'Создаю счёт...' });
+    const invoice = await createInvoice(userId, refCode);
+    if (!invoice) {
+      await edit(`❌ Ошибка создания счёта\\. Попробуй снова или оплати через USDT TRC\\-20\\.`, mainKeyboard(userId));
+      return;
+    }
+    await edit(
+      `💳 *Оплата через CryptoBot*\n\nСумма: *${PRICE_WITH_FEE} USDT*\n_\\(включая комиссию сервиса 3%\\, тебе придёт ровно 12 USDT\\)_\n\nНажми кнопку ниже — откроется CryptoBot для оплаты\\.\nМожно оплатить рублями через СБП прямо внутри\\!\n\nСчёт действителен *1 час*\\.`,
+      {
+        inline_keyboard: [
+          [{ text: '💳 Оплатить 12 USDT', url: invoice.pay_url }],
+          [{ text: '✅ Я оплатил — проверить', callback_data: `check_${invoice.invoice_id}` }],
+          [{ text: '← Назад', callback_data: 'main' }]
+        ]
+      }
+    );
+  } else if (q.data.startsWith('check_')) {
+    const invoiceId = q.data.replace('check_', '');
+    await bot.answerCallbackQuery(q.id, { text: 'Проверяю...' });
+    const invoice = await checkInvoice(invoiceId);
+    if (!invoice) {
+      await bot.sendMessage(userId, '❌ Не удалось проверить счёт\\. Попробуй снова\\.', { parse_mode: 'MarkdownV2' });
+      return;
+    }
+    if (invoice.status !== 'paid') {
+      await bot.sendMessage(userId,
+        `⏳ Оплата ещё не получена\\.\n\nСтатус: *${invoice.status}*\n\nПопробуй через минуту\\.`,
+        { parse_mode: 'MarkdownV2',
+          reply_markup: { inline_keyboard: [[{ text: '🔄 Проверить снова', callback_data: `check_${invoiceId}` }]] }
+        }
+      );
+      return;
+    }
+    if (await isPaid(userId)) {
+      await bot.sendMessage(userId, '✅ Ты уже в списке\\!', { parse_mode: 'MarkdownV2' });
+      return;
+    }
+    // Оплата прошла
+    let payload = {};
+    try { payload = JSON.parse(invoice.payload || '{}'); } catch(e) {}
+    const refCode = payload.refCode || userRefCodes.get(userId) || null;
+    await addSubscriber(userId, q.from.username || String(userId), `cryptobot_${invoiceId}`, refCode);
+    const total = await totalSubscribers();
+    await bot.sendMessage(userId,
+      `🎉 *Оплата подтверждена\\!*\n\n💵 12 USDT ✓\n📅 10 апреля получишь конфиг прямо сюда в бот\\.\n\n*РКН\\.НЕТ* ждёт тебя\\!`,
+      { parse_mode: 'MarkdownV2',
+        reply_markup: { inline_keyboard: [[{ text: '📱 Как подключиться', callback_data: 'howto' }]] }
+      }
+    );
+    try {
+      await bot.sendMessage(ADMIN_ID,
+        `💰 *ОПЛАТА CryptoBot\\!*\n\n👤 @${q.from.username || userId}\n💵 12 USDT\n📊 Всего: *${total}*`,
+        { parse_mode: 'MarkdownV2' }
+      );
+    } catch(e) {}
+    waitingHash.add(userId);
+    await edit(`🔍 Вставь хэш транзакции следующим сообщением:`,
+      { inline_keyboard: [[{ text: '← Отмена', callback_data: 'main' }]] });
+  }
+});
+
+bot.on('message', async (msg) => {
+  const userId = msg.from.id;
+  const text = msg.text?.trim();
+  if (!text || text.startsWith('/')) return;
+  if (!waitingHash.has(userId)) return;
+  waitingHash.delete(userId);
+
+  if (text.length < 60) {
+    return bot.sendMessage(userId, '⚠️ Не похоже на хэш\\. Попробуй снова\\.', { parse_mode: 'MarkdownV2' });
+  }
+  if (await isPaid(userId)) {
+    return bot.sendMessage(userId, '✅ Ты уже в списке\\!', { parse_mode: 'MarkdownV2' });
+  }
+  if (await isHashUsed(text)) {
+    return bot.sendMessage(userId, '❌ Этот хэш уже использован\\.', { parse_mode: 'MarkdownV2' });
+  }
+
+  const wait = await bot.sendMessage(userId, '⏳ Проверяю транзакцию\\.\\.\\.', { parse_mode: 'MarkdownV2' });
+  const { ok, status, amount } = await verifyTronTx(text);
+
+  if (!ok) {
+    const msgs = {
+      not_found: '❌ Транзакция не найдена\\. Подожди 1\\-2 минуты\\.',
+      not_confirmed: '⏳ Ещё не подтверждена\\. Подожди пару минут\\.',
+      wrong_amount: `❌ Сумма: *${amount?.toFixed(2)} USDT*\\. Нужно *12 USDT*\\.`,
+      error: '⚠️ Ошибка соединения\\. Попробуй снова\\.',
+    };
+    return bot.editMessageText(msgs[status] || msgs.error, {
+      chat_id: userId, message_id: wait.message_id, parse_mode: 'MarkdownV2'
+    });
+  }
+
+  const username = msg.from.username || String(userId);
+  const refCode = userRefCodes.get(userId) || null;
+  await addSubscriber(userId, username, text, refCode);
+  const total = await totalSubscribers();
+
+  await bot.editMessageText(
+    `🎉 *Транзакция подтверждена\\!*\n\nСумма: *${amount.toFixed(2)} USDT* ✓\nСеть: *TRC\\-20* ✓\n\nТы в списке *РКН\\.НЕТ*\\. 10 апреля получишь конфиг\\.`,
+    { chat_id: userId, message_id: wait.message_id, parse_mode: 'MarkdownV2' }
+  );
+
+  // Уведомление в личку админу
+  try {
+    await bot.sendMessage(ADMIN_ID,
+      `💰 *НОВАЯ ОПЛАТА\\!*\n\n👤 @${username}\n🆔 ID: ${userId}\n💵 ${amount.toFixed(2)} USDT\n🔗 Хэш: \`${text.slice(0,20)}\\.\\.\\.\`\n📊 Всего подписчиков: *${total}*`,
+      { parse_mode: 'MarkdownV2' }
+    );
+  } catch(e) {}
+});
+
+// ── EXPRESS ────────────────────────────────────────────────────────────────
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// API — проверка хэша из Mini App
 app.post('/api/verify', async (req, res) => {
   const { hash, userId, refCode } = req.body;
   if (!hash || !userId) return res.json({ ok: false, status: 'missing_params' });
-  if (isPaid(userId)) return res.json({ ok: false, status: 'already_paid' });
-  if (isHashUsed(hash)) return res.json({ ok: false, status: 'hash_used' });
+  if (await isPaid(userId)) return res.json({ ok: false, status: 'already_paid' });
+  if (await isHashUsed(hash)) return res.json({ ok: false, status: 'hash_used' });
   if (hash.length < 60) return res.json({ ok: false, status: 'invalid_hash' });
 
   const result = await verifyTronTx(hash);
-
   if (result.ok) {
-    const db = loadDB();
-    const username = db.subscribers[String(userId)]?.username || String(userId);
-    addSubscriber(userId, username, hash, refCode || null);
-    const total = totalSubscribers();
-
-    // Уведомляем бота
+    await addSubscriber(userId, String(userId), hash, refCode || null);
+    const total = await totalSubscribers();
     try {
+      await bot.sendMessage(ADMIN_ID,
+        `💰 *ОПЛАТА \\(Mini App\\)\\!*\n\n🆔 ID: ${userId}\n💵 ${result.amount.toFixed(2)} USDT\n📊 Всего: *${total}*`,
+        { parse_mode: 'MarkdownV2' }
+      );
       await bot.sendMessage(userId,
         `🎉 *Оплата подтверждена\\!* Ты в списке РКН\\.НЕТ\\. 10 апреля получишь конфиг\\.`,
         { parse_mode: 'MarkdownV2' }
       );
-      await bot.sendMessage(ADMIN_ID,
-        `💰 *Новая оплата \\(Mini App\\)\\!*\n👤 ID: ${userId}\n💵 ${result.amount.toFixed(2)} USDT\n📊 Всего: ${total}`,
-        { parse_mode: 'MarkdownV2' }
-      );
-    } catch (e) {}
+    } catch(e) {}
+    return res.json({ ...result, total });
   }
-
-  res.json({ ...result, total: totalSubscribers() });
+  res.json(result);
 });
 
-// API — данные пользователя
-app.get('/api/user/:userId', (req, res) => {
-  const userId = req.params.userId;
-  const db = loadDB();
-  const paid = !!db.subscribers[userId];
-  const refs = countReferrals(userId);
-  const free = getFreeMonths(userId);
-  const total = totalSubscribers();
-  res.json({ paid, refs, free, total, refCode: getRefCode(userId) });
+app.get('/api/user/:userId', async (req, res) => {
+  const data = await getUserData(req.params.userId);
+  res.json(data);
 });
 
-app.listen(PORT, () => {
-  console.log(`РКН.НЕТ сервер запущен на порту ${PORT}`);
-  console.log(`Mini App: ${APP_URL}/app`);
+// ── ЗАПУСК ─────────────────────────────────────────────────────────────────
+initDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`РКН.НЕТ сервер запущен на порту ${PORT}`);
+    console.log(`Mini App: ${APP_URL}/app.html`);
+  });
 });
