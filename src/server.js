@@ -187,10 +187,7 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
   const userId = msg.from.id;
   const refCode = match[1]?.trim() || null;
   if (refCode) userRefCodes.set(userId, refCode);
-  await bot.sendMessage(userId,
-    `👋 Привет\\! Я — бот *РКН\\.НЕТ*\n\nРКН сказал нельзя\\. Мы говорим — *можно\\.*\n\nПока все VPN блокируют — мы работаем\\.\nПока другие тормозят — у нас летает\\.`,
-    { parse_mode: 'MarkdownV2', reply_markup: mainKeyboard(userId) }
-  );
+  // Бот молчит — пользователь сразу видит кнопку Mini App внизу
 });
 
 bot.on('callback_query', async (q) => {
