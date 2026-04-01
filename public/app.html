@@ -288,6 +288,7 @@ const LOGO_SRC = '/logo.jpg';
     <div style="text-align:right">
       <div style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;color:var(--accent)" id="home-total">—</div>
       <div style="font-size:9px;color:var(--muted);letter-spacing:1px">С НАМИ</div>
+      <button onclick="openChannel()" style="margin-top:4px;background:rgba(47,128,237,0.15);border:1px solid rgba(47,128,237,0.3);color:#4499ff;font-size:9px;font-family:'Share Tech Mono',monospace;padding:3px 8px;border-radius:4px;cursor:pointer;letter-spacing:1px">// КАНАЛ</button>
     </div>
   </div>
 
@@ -311,6 +312,22 @@ const LOGO_SRC = '/logo.jpg';
           <div class="cd-u"><div class="cd-n" id="cd-s">--</div><div class="cd-l">СЕК</div></div>
         </div>
         <div id="pay-section">
+          <!-- CryptoBot оплата -->
+          <button class="btn btn-gold" onclick="payCrypto()" style="margin-bottom:4px">
+            💳 // ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT
+          </button>
+          <div style="font-size:9px;color:var(--muted);text-align:center;margin-bottom:12px">
+            Рубли через СБП · Криптовалюта · Быстро и безопасно
+          </div>
+
+          <!-- Разделитель -->
+          <div style="display:flex;align-items:center;gap:8px;margin:12px 0">
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+            <div style="font-size:9px;color:var(--muted)">или вручную</div>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+          </div>
+
+          <!-- USDT вручную -->
           <div class="wallet">
             <div class="wallet-lbl">USDT TRC-20</div>
             <div class="wallet-addr" onclick="copyWallet()">TNnCZrgSQwEgWKViC1eci2MxCMdsoqTWVu</div>
@@ -325,6 +342,36 @@ const LOGO_SRC = '/logo.jpg';
           <div style="font-size:28px;margin-bottom:8px">✓</div>
           <div style="font-family:'Unbounded',sans-serif;font-size:14px;color:var(--accent)">ТЫ В СПИСКЕ</div>
           <div style="font-size:11px;color:var(--muted);margin-top:6px">10 апреля в 10:00 получишь конфиг в бот</div>
+
+          <div style="margin-top:20px;text-align:left">
+            <div style="font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">// УСТАНОВИ ПРИЛОЖЕНИЕ ЗАРАНЕЕ</div>
+
+            <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px">
+              <div style="font-size:10px;color:var(--muted);margin-bottom:6px">🍎 iPhone — найди в App Store:</div>
+              <div style="font-size:12px;color:var(--accent);cursor:pointer;margin-bottom:4px" onclick="copyText('Happ Proxy Utility Plus', this)">Happ Proxy Utility Plus</div>
+              <div style="font-size:12px;color:var(--accent);cursor:pointer" onclick="copyText('Изи VPN', this)">Изи VPN</div>
+              <div style="font-size:9px;color:var(--muted);margin-top:6px">👆 Нажми → скопируется → вставь в поиск App Store</div>
+              <div style="font-size:12px;color:var(--accent);cursor:pointer;margin-bottom:4px" onclick="copyText('V2rayNG', this)">V2rayNG</div>
+              <div style="font-size:12px;color:var(--accent);cursor:pointer" onclick="copyText('V2Ray Client', this)">V2Ray Client</div>
+              <div style="font-size:9px;color:var(--muted);margin-top:6px">Нажми на название — скопируется</div>
+            </div>
+
+            <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:12px">
+              <div style="font-size:10px;color:var(--muted);margin-bottom:6px">💻 Windows — найди в браузере:</div>
+              <div style="font-size:12px;color:var(--accent);cursor:pointer" onclick="copyText('V2rayN скачать', this)">V2rayN скачать</div>
+              <div style="font-size:9px;color:var(--muted);margin-top:6px">Нажми на название — скопируется</div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;text-align:left">
+            <div style="font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">// КАК ПОДКЛЮЧИТЬСЯ</div>
+            <div style="font-size:11px;color:var(--text);line-height:1.8">
+              1. Скачай приложение выше<br>
+              2. Дождись конфига 10 апреля в боте<br>
+              3. Скопируй ссылку → вставь в приложение<br>
+              4. Нажми подключить → <span style="color:var(--accent)">готово ✓</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -417,6 +464,33 @@ const LOGO_SRC = '/logo.jpg';
           <div class="faq-q">Что если не понравится?</div>
           <div class="faq-a">После запуска 3 дня на тест. Не работает — возвращаем деньги.</div>
         </div>
+      </div>
+    </div>
+
+    <!-- CHANNEL -->
+    <div class="block blue">
+      <div class="block-head">📢 НАШЕ СООБЩЕСТВО</div>
+      <div class="block-body">
+        <div class="block-text" style="margin-bottom:12px">
+          Все новости, инструкции и чат поддержки — в нашем Telegram канале.
+        </div>
+        <div class="feat-list">
+          <div class="feat-item">
+            <div class="feat-icon">📰</div>
+            <div><div class="feat-text">Новости о блокировках и обходах</div></div>
+          </div>
+          <div class="feat-item">
+            <div class="feat-icon">📖</div>
+            <div><div class="feat-text">Инструкции по подключению</div></div>
+          </div>
+          <div class="feat-item">
+            <div class="feat-icon">💬</div>
+            <div><div class="feat-text">Чат — задай любой вопрос</div></div>
+          </div>
+        </div>
+        <button class="btn btn-blue" style="margin-top:14px" onclick="openChannel()">
+          📢 Перейти в канал @PKHHET
+        </button>
       </div>
     </div>
 
@@ -560,6 +634,57 @@ function animateSpeeds() {
 }
 setTimeout(animateSpeeds, 500);
 
+// ── CHANNEL ──
+function openChannel() {
+  if (tg) tg.openTelegramLink('https://t.me/PKHHET');
+  else window.open('https://t.me/PKHHET', '_blank');
+}
+
+// ── CRYPTOBOT PAYMENT ──
+async function payCrypto() {
+  const btn = document.querySelector('.btn-gold');
+  if (btn) { btn.disabled = true; btn.textContent = '// СОЗДАЮ СЧЁТ...'; }
+  try {
+    const r = await fetch('/api/create-invoice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, refCode: new URLSearchParams(location.search).get('ref') })
+    });
+    const data = await r.json();
+    if (data.ok && data.pay_url) {
+      if (tg) tg.openLink(data.pay_url);
+      else window.open(data.pay_url, '_blank');
+      // Показываем кнопку проверки
+      setTimeout(() => {
+        if (btn) { btn.disabled = false; btn.textContent = '✅ // Я ОПЛАТИЛ — ПРОВЕРИТЬ'; btn.onclick = () => checkCryptoPayment(data.invoice_id); }
+      }, 2000);
+    } else {
+      if (btn) { btn.disabled = false; btn.textContent = '💳 // ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT'; }
+    }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = '💳 // ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT'; }
+  }
+}
+
+async function checkCryptoPayment(invoiceId) {
+  const btn = document.querySelector('.btn-gold');
+  if (btn) { btn.disabled = true; btn.textContent = '// ПРОВЕРЯЮ...'; }
+  try {
+    const r = await fetch(`/api/check-invoice/${invoiceId}?userId=${userId}`);
+    const data = await r.json();
+    if (data.paid) {
+      document.getElementById('pay-section').style.display = 'none';
+      document.getElementById('paid-section').style.display = 'block';
+    } else {
+      if (btn) { btn.disabled = false; btn.textContent = '🔄 // ПРОВЕРИТЬ ЕЩЁ РАЗ'; btn.onclick = () => checkCryptoPayment(invoiceId); }
+      document.getElementById('verify-status').style.color = 'var(--muted)';
+      document.getElementById('verify-status').textContent = 'Оплата пока не найдена. Попробуй через минуту.';
+    }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 // ПРОВЕРИТЬ ЕЩЁ РАЗ'; }
+  }
+}
+
 // ── COPY WALLET ──
 function copyWallet() {
   navigator.clipboard.writeText(WALLET).catch(()=>{});
@@ -690,6 +815,19 @@ function startLiveCounter(startFrom) {
     setTimeout(() => { liveCount += 1; updateBoth(liveCount); scheduleNext(); }, delay);
   }
   scheduleNext();
+}
+
+function openChannel() {
+  if (tg) tg.openTelegramLink('https://t.me/PKHHET');
+  else window.open('https://t.me/PKHHET', '_blank');
+}
+
+function copyText(text, el) {
+  navigator.clipboard.writeText(text).catch(()=>{});
+  const orig = el.textContent;
+  el.textContent = '✓ Скопировано!';
+  el.style.color = '#ffffff';
+  setTimeout(() => { el.textContent = orig; el.style.color = ''; }, 2000);
 }
 
 // Init

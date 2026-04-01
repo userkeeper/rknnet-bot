@@ -341,6 +341,37 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
+app.post('/api/create-invoice', async (req, res) => {
+  const { userId, refCode } = req.body;
+  if (!userId) return res.json({ ok: false });
+  const invoice = await createInvoice(userId, refCode);
+  if (!invoice) return res.json({ ok: false });
+  res.json({ ok: true, pay_url: invoice.pay_url, invoice_id: invoice.invoice_id });
+});
+
+app.get('/api/check-invoice/:invoiceId', async (req, res) => {
+  const { invoiceId } = req.params;
+  const { userId } = req.query;
+  const invoice = await checkInvoice(invoiceId);
+  if (!invoice || invoice.status !== 'paid') return res.json({ paid: false });
+  if (await isPaid(userId)) return res.json({ paid: true });
+  let payload = {};
+  try { payload = JSON.parse(invoice.payload || '{}'); } catch(e) {}
+  await addSubscriber(userId, String(userId), `cryptobot_${invoiceId}`, payload.refCode || null);
+  const total = await totalSubscribers();
+  try {
+    await bot.sendMessage(ADMIN_ID,
+      `💰 *ОПЛАТА Mini App\\!*\n🆔 ${userId}\n💵 ${PRICE_WITH_FEE} USDT\n📊 Всего: *${total}*`,
+      { parse_mode: 'MarkdownV2' }
+    );
+    await bot.sendMessage(userId,
+      `🎉 Оплата подтверждена\\! 10 апреля получишь конфиг\\.`,
+      { parse_mode: 'MarkdownV2' }
+    );
+  } catch(e) {}
+  res.json({ paid: true });
+});
+
 app.post('/api/verify', async (req, res) => {
   const { hash, userId, refCode } = req.body;
   if (!hash || !userId) return res.json({ ok: false, status: 'missing_params' });
