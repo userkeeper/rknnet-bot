@@ -5,13 +5,13 @@ const path = require('path');
 const { Pool } = require('pg');
 
 // ── НАСТРОЙКИ ──────────────────────────────────────────────────────────────
-const TOKEN = process.env.BOT_TOKEN || '8721490853:AAHb1Z29Hxn8D2_anShDlAQXoo7H9GvMVWk';
-const WALLET = 'TNnCZrgSQwEgWKViC1eci2MxCMdsoqTWVu';
-const ADMIN_ID = 7272909965;
+const TOKEN = process.env.BOT_TOKEN;
+const WALLET = process.env.WALLET || 'TNnCZrgSQwEgWKViC1eci2MxCMdsoqTWVu';
+const ADMIN_ID = parseInt(process.env.ADMIN_ID) || 7272909965;
 const PORT = process.env.PORT || 8080;
 const APP_URL = process.env.APP_URL || `http://localhost:${PORT}`;
-const BOT_USERNAME = 'PKHHET_bot';
-const CRYPTO_TOKEN = process.env.CRYPTO_TOKEN || '560582:AADq82vkT1otvXocEw32prQMenhkyPg2V1s';
+const BOT_USERNAME = process.env.BOT_USERNAME || 'PKHHET_bot';
+const CRYPTO_TOKEN = process.env.CRYPTO_TOKEN;
 const CRYPTO_API = 'https://pay.crypt.bot/api';
 const PRICE_USDT = 12;
 const PRICE_WITH_FEE = (12 * 1.03).toFixed(2); // 12.36 USDT с учётом комиссии 3%
