@@ -81,6 +81,26 @@ async function initDB() {
         hash TEXT PRIMARY KEY
       )
     `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS promo_codes (
+        code TEXT PRIMARY KEY,
+        type TEXT NOT NULL,
+        discount INTEGER DEFAULT 0,
+        months INTEGER DEFAULT 0,
+        max_uses INTEGER DEFAULT 1,
+        uses INTEGER DEFAULT 0,
+        active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS promo_uses (
+        code TEXT,
+        user_id TEXT,
+        used_at TIMESTAMP DEFAULT NOW(),
+        PRIMARY KEY (code, user_id)
+      )
+    `);
     console.log('БД инициализирована');
   } catch (e) {
     console.error('Ошибка БД:', e.message);
@@ -337,6 +357,146 @@ bot.on('message', async (msg) => {
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
+
+app.post('/api/promo', async (req, res) => {
+  const { userId, code } = req.body;
+  if (!userId || !code) return res.json({ ok: false, status: 'missing_params' });
+  if (await isPaid(userId)) return res.json({ ok: false, status: 'already_paid' });
+
+  // Проверяем не использован ли промокод этим юзером
+  try {
+    const r = await pool.query('SELECT 1 FROM used_hashes WHERE hash=$1', [`promo_${code}_${userId}`]);
+    if (r.rows.length > 0) return res.json({ ok: false, status: 'already_used' });
+  } catch(e) {}
+
+  await addSubscriber(userId, String(userId), `promo_${code}_${userId}`, null);
+  const total = await totalSubscribers();
+
+  try {
+    await bot.sendMessage(ADMIN_ID,
+      `🎁 *ПРОМОКОД\\!*\n👤 ID: ${userId}\n🔑 Код: ${code}\n📊 Всего: *${total}*`,
+      { parse_mode: 'MarkdownV2' }
+    );
+    await bot.sendMessage(userId,
+      `🎉 Промокод активирован\\! 10 апреля получишь конфиг\\.`,
+      { parse_mode: 'MarkdownV2' }
+    );
+  } catch(e) {}
+
+  res.json({ ok: true });
+});
+
+// API — проверка промокода
+app.post('/api/promo', async (req, res) => {
+  const { code, userId } = req.body;
+  if (!code || !userId) return res.json({ valid: false, message: 'Ошибка запроса' });
+
+  try {
+    // Проверяем промокод
+    const r = await pool.query(
+      'SELECT * FROM promo_codes WHERE code=$1 AND active=true',
+      [code.toUpperCase()]
+    );
+    if (r.rows.length === 0) return res.json({ valid: false, message: '✗ Промокод не найден' });
+
+    const promo = r.rows[0];
+
+    // Проверяем лимит использований
+    if (promo.uses >= promo.max_uses) return res.json({ valid: false, message: '✗ Промокод уже использован' });
+
+    // Проверяем не использовал ли этот юзер
+    const used = await pool.query(
+      'SELECT 1 FROM promo_uses WHERE code=$1 AND user_id=$2',
+      [code.toUpperCase(), String(userId)]
+    );
+    if (used.rows.length > 0) return res.json({ valid: false, message: '✗ Ты уже использовал этот промокод' });
+
+    // Применяем промокод
+    await pool.query('UPDATE promo_codes SET uses=uses+1 WHERE code=$1', [code.toUpperCase()]);
+    await pool.query('INSERT INTO promo_uses (code, user_id) VALUES ($1,$2)', [code.toUpperCase(), String(userId)]);
+
+    if (promo.type === 'free') {
+      // Бесплатный доступ
+      if (!(await isPaid(userId))) {
+        await addSubscriber(userId, String(userId), `promo_${code}_${userId}`, null);
+        const total = await totalSubscribers();
+        try {
+          await bot.sendMessage(ADMIN_ID, `🎁 *Промокод активирован\\!*\n👤 ${userId}\n🔑 ${code}\n📊 Всего: *${total}*`, { parse_mode: 'MarkdownV2' });
+          await bot.sendMessage(userId, `🎉 Промокод активирован\\! Ты в списке РКН\\.НЕТ\\.`, { parse_mode: 'MarkdownV2' });
+        } catch(e) {}
+      }
+      return res.json({ valid: true, type: 'free' });
+    } else if (promo.type === 'discount') {
+      const newPrice = (12 * (1 - promo.discount / 100)).toFixed(2);
+      return res.json({ valid: true, type: 'discount', discount: promo.discount, newPrice });
+    } else if (promo.type === 'months') {
+      return res.json({ valid: true, type: 'months', months: promo.months });
+    }
+  } catch(e) {
+    console.error('Promo error:', e.message);
+    res.json({ valid: false, message: '✗ Ошибка сервера' });
+  }
+});
+
+// Команда создания промокода (только для админа)
+// Использование в Telegram: /promo FREE RKN2026 (бесплатный)
+// /promo DISCOUNT RKN50 50 (скидка 50%)
+// /promo MONTHS RKNBONUS 3 (3 месяца бесплатно)
+bot.onText(/\/promo (.+)/, async (msg, match) => {
+  if (msg.from.id !== ADMIN_ID) return;
+  const parts = match[1].split(' ');
+  const type = parts[0]?.toUpperCase();
+  const code = parts[1]?.toUpperCase();
+  const value = parseInt(parts[2]) || 1;
+  const maxUses = parseInt(parts[3]) || 1;
+
+  if (!type || !code) {
+    return bot.sendMessage(ADMIN_ID, 'Использование:\n/promo FREE КОД [макс_использований]\n/promo DISCOUNT КОД процент [макс]\n/promo MONTHS КОД месяцы [макс]');
+  }
+
+  try {
+    if (type === 'FREE') {
+      await pool.query('INSERT INTO promo_codes (code, type, max_uses) VALUES ($1,$2,$3) ON CONFLICT (code) DO UPDATE SET active=true, uses=0', [code, 'free', maxUses]);
+    } else if (type === 'DISCOUNT') {
+      await pool.query('INSERT INTO promo_codes (code, type, discount, max_uses) VALUES ($1,$2,$3,$4) ON CONFLICT (code) DO UPDATE SET active=true, uses=0, discount=$3', [code, 'discount', value, maxUses]);
+    } else if (type === 'MONTHS') {
+      await pool.query('INSERT INTO promo_codes (code, type, months, max_uses) VALUES ($1,$2,$3,$4) ON CONFLICT (code) DO UPDATE SET active=true, uses=0, months=$3', [code, 'months', value, maxUses]);
+    }
+    bot.sendMessage(ADMIN_ID, `✅ Промокод создан:\nКод: *${code}*\nТип: ${type}\nЗначение: ${value}\nМакс. использований: ${maxUses}`, { parse_mode: 'Markdown' });
+  } catch(e) {
+    bot.sendMessage(ADMIN_ID, `❌ Ошибка: ${e.message}`);
+  }
+});
+
+// Admin API — создание промокода
+app.post('/api/admin/promo', async (req, res) => {
+  const { code, type, value, maxUses, adminId } = req.body;
+  if (String(adminId) !== String(ADMIN_ID)) return res.json({ ok: false, error: 'Unauthorized' });
+  try {
+    if (type === 'free') {
+      await pool.query('INSERT INTO promo_codes (code, type, max_uses) VALUES ($1,$2,$3) ON CONFLICT (code) DO UPDATE SET active=true, uses=0', [code, 'free', maxUses]);
+    } else if (type === 'discount') {
+      await pool.query('INSERT INTO promo_codes (code, type, discount, max_uses) VALUES ($1,$2,$3,$4) ON CONFLICT (code) DO UPDATE SET active=true, uses=0, discount=$3', [code, 'discount', value, maxUses]);
+    } else if (type === 'months') {
+      await pool.query('INSERT INTO promo_codes (code, type, months, max_uses) VALUES ($1,$2,$3,$4) ON CONFLICT (code) DO UPDATE SET active=true, uses=0, months=$3', [code, 'months', value, maxUses]);
+    }
+    res.json({ ok: true, code });
+  } catch(e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
+// Admin API — статистика
+app.get('/api/admin/stats', async (req, res) => {
+  if (String(req.query.adminId) !== String(ADMIN_ID)) return res.json({ ok: false });
+  try {
+    const total = await totalSubscribers();
+    const promos = await pool.query('SELECT COUNT(*) FROM promo_codes');
+    res.json({ ok: true, total, promos: parseInt(promos.rows[0].count) });
+  } catch(e) {
+    res.json({ ok: false });
+  }
+});
 
 app.post('/api/create-invoice', async (req, res) => {
   const { userId, refCode } = req.body;

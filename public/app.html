@@ -312,6 +312,26 @@ const LOGO_SRC = '/logo.jpg';
           <div class="cd-u"><div class="cd-n" id="cd-s">--</div><div class="cd-l">СЕК</div></div>
         </div>
         <div id="pay-section">
+          <!-- Промокод -->
+          <div style="margin-bottom:12px">
+            <div style="font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">// ПРОМОКОД</div>
+            <div style="display:flex;gap:6px">
+              <input class="hash-inp" id="promo-input" placeholder="Введи промокод..." style="margin:0;flex:1">
+              <button onclick="applyPromo()" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:11px;padding:0 14px;border-radius:4px;cursor:pointer;white-space:nowrap">// OK</button>
+            </div>
+            <div id="promo-status" style="font-size:10px;color:var(--muted);margin-top:5px;min-height:14px"></div>
+          </div>
+
+          <!-- Промокод -->
+          <div style="margin-bottom:14px">
+            <div style="font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">// ПРОМОКОД</div>
+            <div style="display:flex;gap:6px">
+              <input id="promo-input" class="hash-inp" style="margin-top:0;flex:1" placeholder="Введи промокод...">
+              <button onclick="applyPromo()" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:11px;padding:0 14px;border-radius:4px;cursor:pointer;white-space:nowrap">// OK</button>
+            </div>
+            <div id="promo-status" style="font-size:10px;color:var(--muted);margin-top:5px;min-height:14px"></div>
+          </div>
+
           <!-- CryptoBot оплата -->
           <button class="btn btn-gold" onclick="payCrypto()" style="margin-bottom:4px">
             💳 // ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT
@@ -560,6 +580,56 @@ const LOGO_SRC = '/logo.jpg';
       <button class="btn btn-gold" onclick="showFeed(); scrollToPromo()">// ПЕРЕЙТИ К ОПЛАТЕ</button>
     </div>
 
+    <!-- ADMIN PANEL — только для @PKHMEN -->
+    <div id="admin-panel" style="display:none;margin-top:16px">
+      <div class="section-label">// ПАНЕЛЬ АДМИНИСТРАТОРА</div>
+      <div class="ref-box">
+        <div style="font-size:11px;color:var(--accent);margin-bottom:12px;letter-spacing:1px">// СОЗДАТЬ ПРОМОКОД</div>
+
+        <div style="margin-bottom:10px">
+          <div style="font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">Тип промокода</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button onclick="setPromoType('free')" id="pt-free" class="promo-type-btn" style="flex:1;padding:8px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:10px;border-radius:4px;cursor:pointer">БЕСПЛАТНО</button>
+            <button onclick="setPromoType('discount')" id="pt-discount" class="promo-type-btn" style="flex:1;padding:8px;background:rgba(0,0,0,0.2);border:1px solid var(--border);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:10px;border-radius:4px;cursor:pointer">СКИДКА %</button>
+            <button onclick="setPromoType('months')" id="pt-months" class="promo-type-btn" style="flex:1;padding:8px;background:rgba(0,0,0,0.2);border:1px solid var(--border);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:10px;border-radius:4px;cursor:pointer">+МЕСЯЦЫ</button>
+          </div>
+        </div>
+
+        <div id="admin-value-row" style="display:none;margin-bottom:10px">
+          <div style="font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px" id="admin-value-label">Значение</div>
+          <input class="hash-inp" id="admin-value" type="number" placeholder="50" style="margin:0">
+        </div>
+
+        <div style="margin-bottom:10px">
+          <div style="font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">Макс. использований</div>
+          <input class="hash-inp" id="admin-maxuses" type="number" placeholder="1" value="1" style="margin:0">
+        </div>
+
+        <button onclick="generatePromo()" class="btn btn-green" style="margin-top:4px">// СГЕНЕРИРОВАТЬ ПРОМОКОД</button>
+
+        <div id="admin-result" style="margin-top:10px;display:none">
+          <div style="font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">Промокод создан</div>
+          <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.2);border-radius:4px;padding:12px;text-align:center;cursor:pointer" onclick="copyPromoCode()" id="admin-promo-display">
+            <div style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;color:var(--accent)" id="admin-promo-code">—</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:4px">нажми чтобы скопировать</div>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:6px;text-align:center" id="admin-promo-info"></div>
+        </div>
+      </div>
+
+      <div class="ref-box" style="margin-top:10px">
+        <div style="font-size:11px;color:var(--accent);margin-bottom:10px;letter-spacing:1px">// СТАТИСТИКА</div>
+        <div class="sub-row">
+          <div class="sub-key">ВСЕГО ПОДПИСЧИКОВ</div>
+          <div class="sub-val green" id="admin-total">—</div>
+        </div>
+        <div class="sub-row" style="border:none">
+          <div class="sub-key">ПРОМОКОДОВ СОЗДАНО</div>
+          <div class="sub-val green" id="admin-promos">—</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -601,6 +671,7 @@ function showProfile() {
   document.getElementById('nav-profile').classList.add('active');
   document.getElementById('nav-feed').classList.remove('active');
   loadProfile();
+  checkAdminAccess();
 }
 
 function scrollToPromo() {
@@ -634,10 +705,217 @@ function animateSpeeds() {
 }
 setTimeout(animateSpeeds, 500);
 
+// ── PROMO CODES ──
+// Добавляй свои промокоды сюда
+const PROMO_CODES = {
+  'РКННЕТ': true,
+  'СВОБОДА': true,
+  'ПКХНЕТ': true,
+  'RKN2026': true,
+  'FREE1MONTH': true,
+};
+
+async function applyPromo() {
+  const input = document.getElementById('promo-input');
+  const status = document.getElementById('promo-status');
+  const code = input.value.trim().toUpperCase();
+
+  if (!code) {
+    status.style.color = 'var(--red)';
+    status.textContent = '⚠ Введи промокод';
+    return;
+  }
+
+  if (!PROMO_CODES[code]) {
+    status.style.color = 'var(--red)';
+    status.textContent = '❌ Неверный промокод';
+    input.style.borderColor = 'rgba(255,34,68,0.5)';
+    return;
+  }
+
+  // Промокод верный — активируем через сервер
+  status.style.color = 'var(--muted)';
+  status.textContent = '⏳ Активирую...';
+  input.disabled = true;
+
+  try {
+    const r = await fetch('/api/promo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, code })
+    });
+    const data = await r.json();
+
+    if (data.ok) {
+      document.getElementById('pay-section').style.display = 'none';
+      document.getElementById('paid-section').style.display = 'block';
+      document.getElementById('sub-badge') && (document.getElementById('sub-badge').style.display = 'block');
+    } else if (data.status === 'already_used') {
+      status.style.color = 'var(--red)';
+      status.textContent = '❌ Этот промокод уже использован';
+      input.disabled = false;
+    } else if (data.status === 'already_paid') {
+      status.style.color = 'var(--accent)';
+      status.textContent = '✓ Ты уже в списке!';
+    } else {
+      status.style.color = 'var(--red)';
+      status.textContent = '❌ Ошибка. Попробуй снова.';
+      input.disabled = false;
+    }
+  } catch(e) {
+    // Если сервер недоступен — активируем локально
+    document.getElementById('pay-section').style.display = 'none';
+    document.getElementById('paid-section').style.display = 'block';
+  }
+}
+
 // ── CHANNEL ──
 function openChannel() {
   if (tg) tg.openTelegramLink('https://t.me/PKHHET');
   else window.open('https://t.me/PKHHET', '_blank');
+}
+
+// ── ADMIN PANEL ──
+const ADMIN_USERNAME = 'PKHMEN';
+let currentPromoType = 'free';
+let generatedPromoCode = null;
+
+function setPromoType(type) {
+  currentPromoType = type;
+  document.querySelectorAll('.promo-type-btn').forEach(btn => {
+    btn.style.background = 'rgba(0,0,0,0.2)';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color = 'var(--muted)';
+  });
+  const active = document.getElementById(`pt-${type}`);
+  if (active) {
+    active.style.background = 'rgba(0,255,136,0.1)';
+    active.style.borderColor = 'rgba(0,255,136,0.3)';
+    active.style.color = 'var(--accent)';
+  }
+  const valueRow = document.getElementById('admin-value-row');
+  const valueLabel = document.getElementById('admin-value-label');
+  if (type === 'free') {
+    valueRow.style.display = 'none';
+  } else if (type === 'discount') {
+    valueRow.style.display = 'block';
+    valueLabel.textContent = 'Скидка (%)';
+    document.getElementById('admin-value').placeholder = '50';
+  } else if (type === 'months') {
+    valueRow.style.display = 'block';
+    valueLabel.textContent = 'Количество месяцев';
+    document.getElementById('admin-value').placeholder = '3';
+  }
+  document.getElementById('admin-result').style.display = 'none';
+}
+
+function generatePromoCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = 'RKN';
+  for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+async function generatePromo() {
+  const code = generatePromoCode();
+  const maxUses = parseInt(document.getElementById('admin-maxuses').value) || 1;
+  const value = parseInt(document.getElementById('admin-value').value) || 0;
+
+  try {
+    const r = await fetch('/api/admin/promo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, type: currentPromoType, value, maxUses, adminId: userId })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      generatedPromoCode = code;
+      document.getElementById('admin-promo-code').textContent = code;
+      let info = '';
+      if (currentPromoType === 'free') info = `Бесплатный доступ · ${maxUses} использований`;
+      else if (currentPromoType === 'discount') info = `Скидка ${value}% · ${maxUses} использований`;
+      else if (currentPromoType === 'months') info = `+${value} мес. бесплатно · ${maxUses} использований`;
+      document.getElementById('admin-promo-info').textContent = info;
+      document.getElementById('admin-result').style.display = 'block';
+      loadAdminStats();
+    }
+  } catch(e) {
+    console.error('Admin promo error:', e);
+  }
+}
+
+function copyPromoCode() {
+  if (!generatedPromoCode) return;
+  navigator.clipboard.writeText(generatedPromoCode).catch(() => {});
+  const el = document.getElementById('admin-promo-code');
+  el.textContent = 'СКОПИРОВАНО!';
+  setTimeout(() => { el.textContent = generatedPromoCode; }, 1500);
+}
+
+async function loadAdminStats() {
+  try {
+    const r = await fetch(`/api/admin/stats?adminId=${userId}`);
+    const data = await r.json();
+    if (data.ok) {
+      document.getElementById('admin-total').textContent = data.total || 0;
+      document.getElementById('admin-promos').textContent = data.promos || 0;
+    }
+  } catch(e) {}
+}
+
+function checkAdminAccess() {
+  const username = tgUser?.username;
+  if (username === ADMIN_USERNAME) {
+    const panel = document.getElementById('admin-panel');
+    if (panel) {
+      panel.style.display = 'block';
+      loadAdminStats();
+    }
+  }
+}
+
+// ── PROMO CODE ──
+let activePromo = null;
+
+async function applyPromo() {
+  const input = document.getElementById('promo-input');
+  const status = document.getElementById('promo-status');
+  const code = input.value.trim().toUpperCase();
+  if (!code) return;
+
+  status.style.color = 'var(--muted)';
+  status.textContent = 'Проверяю...';
+
+  try {
+    const r = await fetch('/api/promo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, userId })
+    });
+    const data = await r.json();
+
+    if (data.valid) {
+      activePromo = code;
+      status.style.color = 'var(--accent)';
+      if (data.type === 'free') {
+        status.textContent = '✓ Промокод активирован — бесплатный доступ!';
+        // Скрываем оплату
+        document.getElementById('pay-section').style.display = 'none';
+        document.getElementById('paid-section').style.display = 'block';
+      } else if (data.type === 'discount') {
+        status.textContent = `✓ Скидка ${data.discount}% применена — к оплате ${data.newPrice} USDT`;
+      } else if (data.type === 'months') {
+        status.textContent = `✓ Промокод активирован — +${data.months} мес. бесплатно!`;
+      }
+    } else {
+      activePromo = null;
+      status.style.color = 'var(--red)';
+      status.textContent = data.message || '✗ Промокод не найден или уже использован';
+    }
+  } catch(e) {
+    status.style.color = 'var(--red)';
+    status.textContent = '✗ Ошибка соединения';
+  }
 }
 
 // ── CRYPTOBOT PAYMENT ──
