@@ -782,7 +782,7 @@ async function applyPromo() {
   if (!code) return;
 
   status.style.color = 'var(--muted)';
-  status.textContent = 'Проверяю...';
+  status.textContent = '⏳ Проверяю...';
 
   try {
     const r = await fetch('/api/promo', {
@@ -793,20 +793,14 @@ async function applyPromo() {
     const data = await r.json();
 
     if (data.valid) {
-      activePromo = code;
       status.style.color = 'var(--accent)';
-      if (data.type === 'free') {
-        status.textContent = '✓ Промокод активирован — бесплатный доступ!';
-        // Скрываем оплату
+      status.textContent = `✓ Промокод активирован!`;
+      // Для всех типов — показываем экран "ТЫ В СПИСКЕ"
+      setTimeout(() => {
         document.getElementById('pay-section').style.display = 'none';
         document.getElementById('paid-section').style.display = 'block';
-      } else if (data.type === 'discount') {
-        status.textContent = `✓ Скидка ${data.discount}% применена — к оплате ${data.newPrice} USDT`;
-      } else if (data.type === 'months') {
-        status.textContent = `✓ Промокод активирован — +${data.months} мес. бесплатно!`;
-      }
+      }, 800);
     } else {
-      activePromo = null;
       status.style.color = 'var(--red)';
       status.textContent = data.message || '✗ Промокод не найден или уже использован';
     }
