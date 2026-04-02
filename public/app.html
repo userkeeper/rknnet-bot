@@ -587,17 +587,8 @@ const LOGO_SRC = '/logo.jpg';
         <div style="font-size:11px;color:var(--accent);margin-bottom:12px;letter-spacing:1px">// СОЗДАТЬ ПРОМОКОД</div>
 
         <div style="margin-bottom:10px">
-          <div style="font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">Тип промокода</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button onclick="setPromoType('free')" id="pt-free" class="promo-type-btn" style="flex:1;padding:8px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:10px;border-radius:4px;cursor:pointer">БЕСПЛАТНО</button>
-            <button onclick="setPromoType('discount')" id="pt-discount" class="promo-type-btn" style="flex:1;padding:8px;background:rgba(0,0,0,0.2);border:1px solid var(--border);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:10px;border-radius:4px;cursor:pointer">СКИДКА %</button>
-            <button onclick="setPromoType('months')" id="pt-months" class="promo-type-btn" style="flex:1;padding:8px;background:rgba(0,0,0,0.2);border:1px solid var(--border);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:10px;border-radius:4px;cursor:pointer">+МЕСЯЦЫ</button>
-          </div>
-        </div>
-
-        <div id="admin-value-row" style="display:none;margin-bottom:10px">
-          <div style="font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px" id="admin-value-label">Значение</div>
-          <input class="hash-inp" id="admin-value" type="number" placeholder="50" style="margin:0">
+          <div style="font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">Бесплатных месяцев</div>
+          <input class="hash-inp" id="admin-value" type="number" placeholder="3" value="1" style="margin:0">
         </div>
 
         <div style="margin-bottom:10px">
@@ -777,49 +768,13 @@ function openChannel() {
 
 // ── ADMIN PANEL ──
 const ADMIN_USERNAME = 'PKHMEN';
-let currentPromoType = 'free';
+let currentPromoType = 'months';
 let generatedPromoCode = null;
-
-function setPromoType(type) {
-  currentPromoType = type;
-  document.querySelectorAll('.promo-type-btn').forEach(btn => {
-    btn.style.background = 'rgba(0,0,0,0.2)';
-    btn.style.borderColor = 'var(--border)';
-    btn.style.color = 'var(--muted)';
-  });
-  const active = document.getElementById(`pt-${type}`);
-  if (active) {
-    active.style.background = 'rgba(0,255,136,0.1)';
-    active.style.borderColor = 'rgba(0,255,136,0.3)';
-    active.style.color = 'var(--accent)';
-  }
-  const valueRow = document.getElementById('admin-value-row');
-  const valueLabel = document.getElementById('admin-value-label');
-  if (type === 'free') {
-    valueRow.style.display = 'none';
-  } else if (type === 'discount') {
-    valueRow.style.display = 'block';
-    valueLabel.textContent = 'Скидка (%)';
-    document.getElementById('admin-value').placeholder = '50';
-  } else if (type === 'months') {
-    valueRow.style.display = 'block';
-    valueLabel.textContent = 'Количество месяцев';
-    document.getElementById('admin-value').placeholder = '3';
-  }
-  document.getElementById('admin-result').style.display = 'none';
-}
-
-function generatePromoCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = 'RKN';
-  for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
-}
 
 async function generatePromo() {
   const code = generatePromoCode();
+  const months = parseInt(document.getElementById('admin-value').value) || 1;
   const maxUses = parseInt(document.getElementById('admin-maxuses').value) || 1;
-  const value = parseInt(document.getElementById('admin-value').value) || 0;
   const btn = document.querySelector('#admin-panel .btn-green');
   if (btn) { btn.disabled = true; btn.textContent = '// СОЗДАЮ...'; }
 
@@ -827,17 +782,13 @@ async function generatePromo() {
     const r = await fetch('/api/admin/promo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, type: currentPromoType, value, maxUses, secret: 'PKHMEN_ADMIN_2026' })
+      body: JSON.stringify({ code, type: 'months', value: months, maxUses, secret: 'PKHMEN_ADMIN_2026' })
     });
     const data = await r.json();
     if (data.ok) {
       generatedPromoCode = code;
       document.getElementById('admin-promo-code').textContent = code;
-      let info = '';
-      if (currentPromoType === 'free') info = `Бесплатный доступ · ${maxUses} использований`;
-      else if (currentPromoType === 'discount') info = `Скидка ${value}% · ${maxUses} использований`;
-      else if (currentPromoType === 'months') info = `+${value} мес. бесплатно · ${maxUses} использований`;
-      document.getElementById('admin-promo-info').textContent = info;
+      document.getElementById('admin-promo-info').textContent = `+${months} мес. бесплатно · ${maxUses} использований`;
       document.getElementById('admin-result').style.display = 'block';
       loadAdminStats();
     } else {
@@ -845,7 +796,7 @@ async function generatePromo() {
     }
   } catch(e) {
     console.error('Admin promo error:', e);
-    alert('Ошибка соединения');
+    alert('Ошибка соединения с сервером');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '// СГЕНЕРИРОВАТЬ ПРОМОКОД'; }
   }
