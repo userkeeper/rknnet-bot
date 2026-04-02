@@ -596,7 +596,7 @@ const LOGO_SRC = '/logo.jpg';
           <input class="hash-inp" id="admin-maxuses" type="number" placeholder="1" value="1" style="margin:0">
         </div>
 
-        <button onclick="generatePromo()" class="btn btn-green" style="margin-top:4px">// СГЕНЕРИРОВАТЬ ПРОМОКОД</button>
+        <button onclick="generatePromo(this)" class="btn btn-green" style="margin-top:4px">// СГЕНЕРИРОВАТЬ ПРОМОКОД</button>
 
         <div id="admin-result" style="margin-top:10px;display:none">
           <div style="font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">Промокод создан</div>
@@ -771,35 +771,40 @@ const ADMIN_USERNAME = 'PKHMEN';
 let currentPromoType = 'months';
 let generatedPromoCode = null;
 
-async function generatePromo() {
+function generatePromoCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = 'RKN';
+  for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+async function generatePromo(btn) {
   const code = generatePromoCode();
   const months = parseInt(document.getElementById('admin-value').value) || 1;
   const maxUses = parseInt(document.getElementById('admin-maxuses').value) || 1;
-  const btn = document.querySelector('#admin-panel .btn-green');
-  if (btn) { btn.disabled = true; btn.textContent = '// СОЗДАЮ...'; }
 
+  const origText = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = '// СОЗДАЮ...'; btn.style.opacity = '0.6'; }
+
+  // Показываем промокод сразу — не ждём сервера
+  generatedPromoCode = code;
+  document.getElementById('admin-promo-code').textContent = code;
+  document.getElementById('admin-promo-info').textContent = `+${months} мес. бесплатно · ${maxUses} использований`;
+  document.getElementById('admin-result').style.display = 'block';
+
+  // Сохраняем на сервер в фоне
   try {
-    const r = await fetch('/api/admin/promo', {
+    await fetch('/api/admin/promo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code, type: 'months', value: months, maxUses, secret: 'PKHMEN_ADMIN_2026' })
     });
-    const data = await r.json();
-    if (data.ok) {
-      generatedPromoCode = code;
-      document.getElementById('admin-promo-code').textContent = code;
-      document.getElementById('admin-promo-info').textContent = `+${months} мес. бесплатно · ${maxUses} использований`;
-      document.getElementById('admin-result').style.display = 'block';
-      loadAdminStats();
-    } else {
-      alert('Ошибка: ' + (data.error || 'неизвестная'));
-    }
+    loadAdminStats();
   } catch(e) {
-    console.error('Admin promo error:', e);
-    alert('Ошибка соединения с сервером');
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '// СГЕНЕРИРОВАТЬ ПРОМОКОД'; }
+    document.getElementById('admin-promo-info').textContent += ' ⚠️ сохрани код вручную';
   }
+
+  if (btn) { btn.textContent = origText; btn.style.opacity = '1'; }
 }
 
 function copyPromoCode() {
