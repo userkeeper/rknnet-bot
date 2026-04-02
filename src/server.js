@@ -470,8 +470,8 @@ bot.onText(/\/promo (.+)/, async (msg, match) => {
 
 // Admin API — создание промокода
 app.post('/api/admin/promo', async (req, res) => {
-  const { code, type, value, maxUses, adminId } = req.body;
-  if (String(adminId) !== String(ADMIN_ID)) return res.json({ ok: false, error: 'Unauthorized' });
+  const { code, type, value, maxUses, secret } = req.body;
+  if (secret !== 'PKHMEN_ADMIN_2026') return res.json({ ok: false, error: 'Unauthorized' });
   try {
     if (type === 'free') {
       await pool.query('INSERT INTO promo_codes (code, type, max_uses) VALUES ($1,$2,$3) ON CONFLICT (code) DO UPDATE SET active=true, uses=0', [code, 'free', maxUses]);
@@ -488,7 +488,7 @@ app.post('/api/admin/promo', async (req, res) => {
 
 // Admin API — статистика
 app.get('/api/admin/stats', async (req, res) => {
-  if (String(req.query.adminId) !== String(ADMIN_ID)) return res.json({ ok: false });
+  if (req.query.secret !== 'PKHMEN_ADMIN_2026') return res.json({ ok: false });
   try {
     const total = await totalSubscribers();
     const promos = await pool.query('SELECT COUNT(*) FROM promo_codes');

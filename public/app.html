@@ -820,12 +820,14 @@ async function generatePromo() {
   const code = generatePromoCode();
   const maxUses = parseInt(document.getElementById('admin-maxuses').value) || 1;
   const value = parseInt(document.getElementById('admin-value').value) || 0;
+  const btn = document.querySelector('#admin-panel .btn-green');
+  if (btn) { btn.disabled = true; btn.textContent = '// СОЗДАЮ...'; }
 
   try {
     const r = await fetch('/api/admin/promo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, type: currentPromoType, value, maxUses, adminId: userId })
+      body: JSON.stringify({ code, type: currentPromoType, value, maxUses, secret: 'PKHMEN_ADMIN_2026' })
     });
     const data = await r.json();
     if (data.ok) {
@@ -838,9 +840,14 @@ async function generatePromo() {
       document.getElementById('admin-promo-info').textContent = info;
       document.getElementById('admin-result').style.display = 'block';
       loadAdminStats();
+    } else {
+      alert('Ошибка: ' + (data.error || 'неизвестная'));
     }
   } catch(e) {
     console.error('Admin promo error:', e);
+    alert('Ошибка соединения');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '// СГЕНЕРИРОВАТЬ ПРОМОКОД'; }
   }
 }
 
@@ -854,7 +861,7 @@ function copyPromoCode() {
 
 async function loadAdminStats() {
   try {
-    const r = await fetch(`/api/admin/stats?adminId=${userId}`);
+    const r = await fetch(`/api/admin/stats?secret=PKHMEN_ADMIN_2026`);
     const data = await r.json();
     if (data.ok) {
       document.getElementById('admin-total').textContent = data.total || 0;
