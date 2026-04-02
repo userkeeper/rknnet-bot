@@ -322,16 +322,6 @@ const LOGO_SRC = '/logo.jpg';
             <div id="promo-status" style="font-size:10px;color:var(--muted);margin-top:5px;min-height:14px"></div>
           </div>
 
-          <!-- Промокод -->
-          <div style="margin-bottom:14px">
-            <div style="font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">// ПРОМОКОД</div>
-            <div style="display:flex;gap:6px">
-              <input id="promo-input" class="hash-inp" style="margin-top:0;flex:1" placeholder="Введи промокод...">
-              <button onclick="applyPromo()" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:11px;padding:0 14px;border-radius:4px;cursor:pointer;white-space:nowrap">// OK</button>
-            </div>
-            <div id="promo-status" style="font-size:10px;color:var(--muted);margin-top:5px;min-height:14px"></div>
-          </div>
-
           <!-- CryptoBot оплата -->
           <button class="btn btn-gold" onclick="payCrypto()" style="margin-bottom:4px">
             💳 // ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT
@@ -696,70 +686,6 @@ function animateSpeeds() {
 }
 setTimeout(animateSpeeds, 500);
 
-// ── PROMO CODES ──
-// Добавляй свои промокоды сюда
-const PROMO_CODES = {
-  'РКННЕТ': true,
-  'СВОБОДА': true,
-  'ПКХНЕТ': true,
-  'RKN2026': true,
-  'FREE1MONTH': true,
-};
-
-async function applyPromo() {
-  const input = document.getElementById('promo-input');
-  const status = document.getElementById('promo-status');
-  const code = input.value.trim().toUpperCase();
-
-  if (!code) {
-    status.style.color = 'var(--red)';
-    status.textContent = '⚠ Введи промокод';
-    return;
-  }
-
-  if (!PROMO_CODES[code]) {
-    status.style.color = 'var(--red)';
-    status.textContent = '❌ Неверный промокод';
-    input.style.borderColor = 'rgba(255,34,68,0.5)';
-    return;
-  }
-
-  // Промокод верный — активируем через сервер
-  status.style.color = 'var(--muted)';
-  status.textContent = '⏳ Активирую...';
-  input.disabled = true;
-
-  try {
-    const r = await fetch('/api/promo', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, code })
-    });
-    const data = await r.json();
-
-    if (data.ok) {
-      document.getElementById('pay-section').style.display = 'none';
-      document.getElementById('paid-section').style.display = 'block';
-      document.getElementById('sub-badge') && (document.getElementById('sub-badge').style.display = 'block');
-    } else if (data.status === 'already_used') {
-      status.style.color = 'var(--red)';
-      status.textContent = '❌ Этот промокод уже использован';
-      input.disabled = false;
-    } else if (data.status === 'already_paid') {
-      status.style.color = 'var(--accent)';
-      status.textContent = '✓ Ты уже в списке!';
-    } else {
-      status.style.color = 'var(--red)';
-      status.textContent = '❌ Ошибка. Попробуй снова.';
-      input.disabled = false;
-    }
-  } catch(e) {
-    // Если сервер недоступен — активируем локально
-    document.getElementById('pay-section').style.display = 'none';
-    document.getElementById('paid-section').style.display = 'block';
-  }
-}
-
 // ── CHANNEL ──
 function openChannel() {
   if (tg) tg.openTelegramLink('https://t.me/PKHHET');
@@ -834,6 +760,15 @@ function checkAdminAccess() {
       panel.style.display = 'block';
       loadAdminStats();
     }
+    // Админу — бесконечная подписка
+    document.getElementById('status-chip').className = 'status-chip active';
+    document.getElementById('status-text').textContent = 'АКТИВНА ∞';
+    document.getElementById('sub-status').textContent = 'АКТИВНА';
+    document.getElementById('sub-status').className = 'sub-val green';
+    document.getElementById('sub-plan').textContent = 'ADMIN / БЕЗЛИМИТ';
+    document.getElementById('sub-expires').textContent = '∞ НАВСЕГДА';
+    const noSub = document.getElementById('no-sub-block');
+    if (noSub) noSub.style.display = 'none';
   }
 }
 

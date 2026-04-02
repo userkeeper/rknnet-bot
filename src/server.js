@@ -392,7 +392,6 @@ app.post('/api/promo', async (req, res) => {
   if (!code || !userId) return res.json({ valid: false, message: 'Ошибка запроса' });
 
   try {
-    // Проверяем промокод
     const r = await pool.query(
       'SELECT * FROM promo_codes WHERE code=$1 AND active=true',
       [code.toUpperCase()]
@@ -401,40 +400,50 @@ app.post('/api/promo', async (req, res) => {
 
     const promo = r.rows[0];
 
-    // Проверяем лимит использований
-    if (promo.uses >= promo.max_uses) return res.json({ valid: false, message: '✗ Промокод уже использован' });
+    if (promo.uses >= promo.max_uses) return res.json({ valid: false, message: '✗ Промокод исчерпан' });
 
-    // Проверяем не использовал ли этот юзер
     const used = await pool.query(
       'SELECT 1 FROM promo_uses WHERE code=$1 AND user_id=$2',
       [code.toUpperCase(), String(userId)]
     );
     if (used.rows.length > 0) return res.json({ valid: false, message: '✗ Ты уже использовал этот промокод' });
 
-    // Применяем промокод
     await pool.query('UPDATE promo_codes SET uses=uses+1 WHERE code=$1', [code.toUpperCase()]);
     await pool.query('INSERT INTO promo_uses (code, user_id) VALUES ($1,$2)', [code.toUpperCase(), String(userId)]);
 
-    if (promo.type === 'free') {
-      // Бесплатный доступ
-      if (!(await isPaid(userId))) {
-        await addSubscriber(userId, String(userId), `promo_${code}_${userId}`, null);
-        const total = await totalSubscribers();
-        try {
-          await bot.sendMessage(ADMIN_ID, `🎁 *Промокод активирован\\!*\n👤 ${userId}\n🔑 ${code}\n📊 Всего: *${total}*`, { parse_mode: 'MarkdownV2' });
-          await bot.sendMessage(userId, `🎉 Промокод активирован\\! Ты в списке РКН\\.НЕТ\\.`, { parse_mode: 'MarkdownV2' });
-        } catch(e) {}
-      }
-      return res.json({ valid: true, type: 'free' });
-    } else if (promo.type === 'discount') {
-      const newPrice = (12 * (1 - promo.discount / 100)).toFixed(2);
-      return res.json({ valid: true, type: 'discount', discount: promo.discount, newPrice });
-    } else if (promo.type === 'months') {
-      return res.json({ valid: true, type: 'months', months: promo.months });
+    // Добавляем подписчика и уведомляем
+    if (!(await isPaid(userId))) {
+      await addSubscriber(userId, String(userId), `promo_${code}_${userId}`, null);
     }
+
+    // Начисляем бонусные месяцы
+    if (promo.type === 'months' && promo.months > 0) {
+      await pool.query('UPDATE subscribers SET free_months = free_months + $1 WHERE user_id=$2', [promo.months, String(userId)]);
+    }
+
+    const total = await totalSubscribers();
+
+    // Уведомляем тебя
+    try {
+      await bot.sendMessage(ADMIN_ID,
+        `🎁 *Промокод использован\\!*\n👤 ID: ${userId}\n🔑 Код: \`${code}\`\n📅 Месяцев: *${promo.months || 0}*\n📊 Всего: *${total}*`,
+        { parse_mode: 'MarkdownV2' }
+      );
+    } catch(e) {}
+
+    // Уведомляем пользователя
+    try {
+      await bot.sendMessage(userId,
+        `🎉 *Промокод активирован\\!*\n\nТы в списке РКН\\.НЕТ\\. 10 апреля получишь конфиг прямо в этот бот\\.`,
+        { parse_mode: 'MarkdownV2' }
+      );
+    } catch(e) {}
+
+    return res.json({ valid: true, type: promo.type, months: promo.months });
+
   } catch(e) {
     console.error('Promo error:', e.message);
-    res.json({ valid: false, message: '✗ Ошибка сервера' });
+    res.json({ valid: false, message: '✗ Ошибка сервера: ' + e.message });
   }
 });
 
