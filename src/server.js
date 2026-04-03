@@ -419,10 +419,11 @@ app.get('/api/admin/stats', async (req, res) => {
   const { adminId } = req.query;
   if (parseInt(adminId) !== ADMIN_ID) return res.json({ ok: false });
   const total = await totalSubscribers();
-  const recent = await pool.query(
-    'SELECT user_id, username, plan, expires_at, paid_at FROM subscribers ORDER BY paid_at DESC LIMIT 10'
+  const all_users = await pool.query(
+    `SELECT user_id, username, plan, expires_at, active, paid_at
+     FROM subscribers ORDER BY paid_at DESC LIMIT 100`
   ).catch(() => ({ rows: [] }));
-  res.json({ ok: true, total, recent: recent.rows });
+  res.json({ ok: true, total, all_users: all_users.rows });
 });
 
 initDB().then(() => {
