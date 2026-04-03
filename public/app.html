@@ -326,103 +326,72 @@ const LOGO_SRC = '/logo2.jpg';
 
   <div class="feed">
 
-    <!-- PROMO -->
+    <!-- ТАРИФЫ -->
     <div class="block gold">
       <div class="block-head">⚡ ТАРИФЫ</div>
       <div class="block-body">
-
-        <!-- Plan selector -->
-        <div id="plan-selector" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
           <div class="plan-card selected" data-plan="month1" onclick="selectPlan('month1')">
             <div style="display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div style="font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;color:var(--accent)">1 МЕСЯЦ</div>
-                <div style="font-size:10px;color:var(--muted);margin-top:2px">Попробовать</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;color:var(--accent)" id="price-month1">3 USDT</div>
-              </div>
+              <div><div style="font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;color:var(--accent)">1 МЕСЯЦ</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Попробовать</div></div>
+              <div style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900;color:var(--accent)">$1</div>
             </div>
           </div>
           <div class="plan-card" data-plan="month6" onclick="selectPlan('month6')">
             <div style="display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div style="font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;color:var(--pink)">6 МЕСЯЦЕВ</div>
-                <div style="font-size:10px;color:var(--muted);margin-top:2px">Выгоднее на 17%</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;color:var(--pink)" id="price-month6">15 USDT</div>
-              </div>
+              <div><div style="font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;color:var(--pink)">6 МЕСЯЦЕВ</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Экономия vs месячного</div></div>
+              <div style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900;color:var(--pink)">$6</div>
             </div>
           </div>
           <div class="plan-card" data-plan="month12" onclick="selectPlan('month12')">
             <div style="display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div style="font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;color:#ffcc00">1 ГОД 🔥</div>
-                <div style="font-size:10px;color:var(--muted);margin-top:2px">Лучшая цена — экономия 33%</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;color:#ffcc00" id="price-month12">24 USDT</div>
-              </div>
+              <div><div style="font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;color:#ffcc00">1 ГОД 🔥</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Лучшая цена</div></div>
+              <div style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900;color:#ffcc00">$12</div>
             </div>
           </div>
         </div>
-
         <div id="pay-section">
-          <!-- Промокод -->
-          <div style="margin-bottom:10px">
+          <div style="margin-bottom:12px">
             <div style="display:flex;gap:6px">
-              <input class="hash-inp" id="promo-input" placeholder="Промокод (если есть)..." style="margin-top:0;flex:1">
-              <button onclick="applyPromo()" style="margin-top:0;padding:10px 12px;background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);color:var(--accent);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;white-space:nowrap">ПРИМЕНИТЬ</button>
+              <input class="hash-inp" id="promo-input" placeholder="Промокод..." style="margin-top:0;flex:1;text-transform:uppercase">
+              <button onclick="usePromoCode()" style="margin-top:0;padding:10px 12px;background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);color:var(--accent);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;white-space:nowrap">ПРИМЕНИТЬ</button>
             </div>
-            <div id="promo-status" style="font-size:10px;color:var(--muted);margin-top:4px;min-height:14px"></div>
+            <div id="promo-status" style="font-size:10px;margin-top:4px;min-height:14px;color:var(--muted)"></div>
           </div>
-
-          <!-- CryptoBot -->
-          <button class="btn btn-gold" id="pay-crypto-btn" onclick="payCrypto()">
-            💳 // ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT
-          </button>
-          <div style="font-size:9px;color:var(--muted);text-align:center;margin-bottom:12px;margin-top:4px">
-            Рубли через СБП · Криптовалюта · Быстро и безопасно
-          </div>
-
-          <!-- Разделитель -->
+          <button class="btn btn-gold" id="pay-crypto-btn" onclick="payCrypto()">💳 // ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT</button>
+          <div style="font-size:9px;color:var(--muted);text-align:center;margin:4px 0 12px">Рубли через СБП · Крипто · Быстро</div>
           <div style="display:flex;align-items:center;gap:8px;margin:12px 0">
             <div style="flex:1;height:1px;background:var(--border)"></div>
             <div style="font-size:9px;color:var(--muted)">или вручную USDT TRC-20</div>
             <div style="flex:1;height:1px;background:var(--border)"></div>
           </div>
-
-          <!-- USDT вручную -->
           <div class="wallet">
             <div class="wallet-lbl">USDT TRC-20</div>
             <div class="wallet-addr" onclick="copyWallet()">TNnCZrgSQwEgWKViC1eci2MxCMdsoqTWVu</div>
           </div>
-          <div class="block-text" style="margin-top:8px">Отправь сумму выбранного тарифа и вставь хэш:</div>
+          <div class="block-text" style="margin-top:8px">Отправь сумму тарифа и вставь хэш:</div>
           <input class="hash-inp" id="hash-input" placeholder="Хэш транзакции (txid)...">
           <button class="btn btn-green" id="verify-btn" onclick="verifyPayment()">// ПРОВЕРИТЬ ОПЛАТУ</button>
           <div class="verify-status" id="verify-status"></div>
-          <button class="btn btn-blue" onclick="copyWallet()">// СКОПИРОВАТЬ АДРЕС</button>
+          <button class="btn btn-blue" onclick="copyWallet()" style="margin-top:6px">// СКОПИРОВАТЬ АДРЕС</button>
         </div>
-
         <div id="paid-section" style="display:none;text-align:center;padding:16px 0">
           <div style="font-size:28px;margin-bottom:8px">✓</div>
           <div style="font-family:'Unbounded',sans-serif;font-size:14px;color:var(--accent)">ПОДПИСКА АКТИВНА</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:6px">Конфиг отправлен в бот — проверь сообщения</div>
-          <div style="margin-top:20px;text-align:left">
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">QR-код отправлен в бот</div>
+          <div id="qr-block" style="margin:16px auto;display:none;width:200px">
+            <img id="qr-img" style="width:200px;height:200px;border-radius:8px;border:1px solid rgba(0,200,255,0.2)" alt="QR">
+            <div style="font-size:9px;color:var(--muted);margin-top:8px">Отсканируй в Streisand или v2rayNG</div>
+          </div>
+          <div style="margin-top:16px;text-align:left">
             <div style="font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">// КАК ПОДКЛЮЧИТЬСЯ</div>
             <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px">
-              <div style="font-size:10px;color:var(--muted);margin-bottom:8px">📱 Шаг 1 — скачай приложение:</div>
               <div style="font-size:12px;color:var(--accent);cursor:pointer;margin-bottom:6px" onclick="copyText('Streisand', this)">🍎 iPhone — Streisand</div>
               <div style="font-size:12px;color:var(--accent);cursor:pointer" onclick="copyText('v2rayNG', this)">🤖 Android — v2rayNG</div>
               <div style="font-size:9px;color:var(--muted);margin-top:6px">👆 Нажми → скопируется → вставь в поиск</div>
             </div>
             <div style="background:rgba(0,200,255,0.04);border:1px solid rgba(0,200,255,0.15);border-radius:8px;padding:12px">
-              <div style="font-size:10px;color:var(--muted);margin-bottom:6px">📡 Шаг 2 — в приложении:</div>
-              <div style="font-size:11px;color:var(--text);line-height:1.8">
-                <span style="color:var(--accent)">+</span> → Import from URL → вставь ссылку из бота<br>
-                Нажми подключить → <span style="color:var(--accent)">готово ✓</span>
-              </div>
+              <div style="font-size:11px;color:var(--text);line-height:1.8"><span style="color:var(--accent)">+</span> → Import from URL → вставь ссылку из бота<br>Нажми подключить → <span style="color:var(--accent)">готово ✓</span></div>
             </div>
           </div>
         </div>
@@ -616,62 +585,119 @@ const LOGO_SRC = '/logo2.jpg';
   </div>
 </div>
 
+<div class="screen" id="screen-profile">
+  <div class="profile">
+
+    <div class="prof-hero">
+      <img class="prof-logo" src="/logo2.jpg" onerror="this.style.display='none'" alt="">
+      <div class="prof-name">РКН.НЕТ</div>
+      <div class="prof-id" id="prof-id">ID: —</div>
+      <div id="status-chip" class="status-chip inactive">
+        <div class="status-dot"></div>
+        <span id="status-text">НЕТ ПОДПИСКИ</span>
+      </div>
+    </div>
+
+    <div class="prof-grid">
+      <div class="prof-stat">
+        <div class="prof-stat-n" id="prof-total">—</div>
+        <div class="prof-stat-l">всего с нами</div>
+      </div>
+      <div class="prof-stat">
+        <div class="prof-stat-n" id="prof-refs">0</div>
+        <div class="prof-stat-l">рефералов</div>
+      </div>
+    </div>
+
+    <!-- Subscription details -->
+    <div class="section-label">// ПОДПИСКА</div>
+    <div class="sub-detail" id="sub-detail">
+      <div class="sub-row">
+        <div class="sub-key">СТАТУС</div>
+        <div class="sub-val red" id="sub-status">НЕАКТИВНА</div>
+      </div>
+      <div class="sub-row">
+        <div class="sub-key">ТАРИФ</div>
+        <div class="sub-val" id="sub-plan">—</div>
+      </div>
+      <div class="sub-row">
+        <div class="sub-key">ДОСТУП ДО</div>
+        <div class="sub-val" id="sub-expires">10 APR 2027</div>
+      </div>
+      <div class="sub-row">
+        <div class="sub-key">УСТРОЙСТВ</div>
+        <div class="sub-val">до 5</div>
+      </div>
+      <div class="sub-row" style="border:none">
+        <div class="sub-key">БОН. МЕСЯЦЕВ</div>
+        <div class="sub-val green" id="sub-bonus">0</div>
+      </div>
+    </div>
+
+    <!-- Referral -->
+    <div class="section-label">// РЕФЕРАЛЬНАЯ ПРОГРАММА</div>
+    <div class="ref-box">
+      <div class="block-text">За каждого оплатившего друга — <span class="hl">+1 месяц бесплатно</span></div>
+      <div class="ref-link-text" id="ref-link" onclick="copyRef()">Загрузка...</div>
+      <button class="btn btn-green" onclick="copyRef()">// СКОПИРОВАТЬ ССЫЛКУ</button>
+    </div>
+
+    <div id="no-sub-block">
+      <div class="section-label">// ОФОРМИТЬ ПОДПИСКУ</div>
+      <button class="btn btn-gold" onclick="showFeed(); scrollToPromo()">// ПЕРЕЙТИ К ОПЛАТЕ</button>
+    </div>
+
+  </div>
+</div>
+
+
 <!-- ── ADMIN ── -->
 <div class="screen" id="screen-admin">
   <div class="admin-screen">
-
     <div style="padding:16px 0 12px;border-bottom:1px solid var(--border);margin-bottom:14px">
       <div style="font-family:'Unbounded',sans-serif;font-size:14px;font-weight:900;color:var(--pink)">⚙ ПАНЕЛЬ ВЛАДЕЛЬЦА</div>
-      <div style="font-size:10px;color:var(--muted);margin-top:3px">Только для тебя</div>
     </div>
 
-    <!-- Stats -->
+    <!-- Статистика -->
     <div class="admin-section">
       <div class="section-label">// СТАТИСТИКА</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
         <div class="prof-stat"><div class="prof-stat-n" id="admin-total">—</div><div class="prof-stat-l">подписчиков</div></div>
         <div class="prof-stat"><div class="prof-stat-n" id="admin-promos-count">—</div><div class="prof-stat-l">промокодов</div></div>
       </div>
-      <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Последние подписчики:</div>
-      <div id="admin-recent" style="font-size:10px;color:var(--text);line-height:1.8"></div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Последние:</div>
+      <div id="admin-recent" style="font-size:10px;color:var(--text);line-height:2"></div>
     </div>
 
-    <!-- Grant access -->
+    <!-- Выдать доступ -->
     <div class="admin-section">
       <div class="section-label">// ВЫДАТЬ ДОСТУП</div>
       <input class="admin-inp" id="grant-uid" placeholder="Telegram ID пользователя">
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px">
-        <button onclick="grantAccess('month1')" style="padding:8px;background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);color:var(--accent);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">1 МЕС</button>
-        <button onclick="grantAccess('month6')" style="padding:8px;background:rgba(180,0,255,0.08);border:1px solid rgba(180,0,255,0.2);color:var(--pink);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">6 МЕС</button>
-        <button onclick="grantAccess('month12')" style="padding:8px;background:rgba(255,204,0,0.08);border:1px solid rgba(255,204,0,0.2);color:#ffcc00;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">1 ГОД</button>
+        <button onclick="grantAccess('month1')" style="padding:10px 4px;background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);color:var(--accent);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">1 МЕС<br>$1</button>
+        <button onclick="grantAccess('month6')" style="padding:10px 4px;background:rgba(180,0,255,0.08);border:1px solid rgba(180,0,255,0.2);color:var(--pink);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">6 МЕС<br>$6</button>
+        <button onclick="grantAccess('month12')" style="padding:10px 4px;background:rgba(255,204,0,0.08);border:1px solid rgba(255,204,0,0.2);color:#ffcc00;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">1 ГОД<br>$12</button>
       </div>
       <div id="grant-status" style="font-size:10px;color:var(--muted);min-height:14px"></div>
     </div>
 
-    <!-- Create promo -->
+    <!-- Создать промокод -->
     <div class="admin-section">
       <div class="section-label">// СОЗДАТЬ ПРОМОКОД</div>
-      <input class="admin-inp" id="new-promo-code" placeholder="Код (напр. FRIEND2026)">
-      <div class="admin-row">
-        <input class="admin-inp" id="new-promo-discount" placeholder="Скидка %" type="number" min="0" max="100" style="flex:1">
-        <input class="admin-inp" id="new-promo-uses" placeholder="Кол-во использ." type="number" min="1" style="flex:1">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Выбери тариф — промокод сгенерируется автоматически</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
+        <button onclick="createPromo('month1')" style="padding:12px 4px;background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);color:var(--accent);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">1 МЕС<br>$1</button>
+        <button onclick="createPromo('month6')" style="padding:12px 4px;background:rgba(180,0,255,0.08);border:1px solid rgba(180,0,255,0.2);color:var(--pink);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">6 МЕС<br>$6</button>
+        <button onclick="createPromo('month12')" style="padding:12px 4px;background:rgba(255,204,0,0.08);border:1px solid rgba(255,204,0,0.2);color:#ffcc00;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">1 ГОД<br>$12</button>
       </div>
-      <div style="font-size:10px;color:var(--muted);margin-bottom:6px">Бесплатный тариф (если скидка 100%):</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
-        <button onclick="setFreePromoplan('month1')" id="fp-month1" style="padding:6px;background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--muted);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">1 МЕС</button>
-        <button onclick="setFreePromoplan('month6')" id="fp-month6" style="padding:6px;background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--muted);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">6 МЕС</button>
-        <button onclick="setFreePromoplan('month12')" id="fp-month12" style="padding:6px;background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--muted);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">1 ГОД</button>
-      </div>
-      <button class="btn btn-green" onclick="createPromo()" style="margin-top:0">// СОЗДАТЬ ПРОМОКОД</button>
-      <div id="promo-create-status" style="font-size:10px;color:var(--muted);margin-top:6px;min-height:14px"></div>
+      <div id="promo-create-status" style="font-size:11px;min-height:14px;color:var(--muted)"></div>
     </div>
 
-    <!-- Promo list -->
+    <!-- Список промокодов -->
     <div class="admin-section">
       <div class="section-label">// АКТИВНЫЕ ПРОМОКОДЫ</div>
-      <div id="admin-promos-list" style="font-size:10px;color:var(--text);line-height:2"></div>
+      <div id="admin-promos-list" style="font-size:11px;color:var(--text);line-height:2.2"></div>
     </div>
-
   </div>
 </div>
 
@@ -695,145 +721,85 @@ const LOGO_SRC = '/logo2.jpg';
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#04030d'); tg.setBackgroundColor('#04030d'); }
 
-const userId = tg?.initDataUnsafe?.user?.id
-  || new URLSearchParams(location.search).get('uid')
-  || 'guest';
+const userId = tg?.initDataUnsafe?.user?.id || new URLSearchParams(location.search).get('uid') || 'guest';
 const tgUser = tg?.initDataUnsafe?.user;
 const BOT_USERNAME = 'PKHHET_bot';
 const WALLET = 'TNnCZrgSQwEgWKViC1eci2MxCMdsoqTWVu';
 const ADMIN_TG_ID = 7272909965;
-
 let selectedPlan = 'month1';
-let appliedPromo = null;
-let freePromoPlan = null;
 
-// ── NAVIGATION ──
-function setNav(active) {
-  ['feed','profile','admin'].forEach(n => {
-    document.getElementById(`screen-${n}`)?.classList.toggle('active', n === active);
-    document.getElementById(`nav-${n}`)?.classList.toggle('active', n === active);
+// ── NAV ──
+function setNav(n) {
+  ['feed','profile','admin'].forEach(s => {
+    document.getElementById('screen-'+s)?.classList.toggle('active', s===n);
+    document.getElementById('nav-'+s)?.classList.toggle('active', s===n);
   });
 }
 function showFeed() { setNav('feed'); animateSpeeds(); }
 function showProfile() { setNav('profile'); loadProfile(); }
 function showAdmin() { setNav('admin'); loadAdminData(); }
+function scrollToPromo() { setTimeout(() => document.querySelector('.block.gold')?.scrollIntoView({behavior:'smooth'}), 100); }
 
-function scrollToPromo() {
-  setTimeout(() => document.querySelector('.block.gold')?.scrollIntoView({behavior:'smooth'}), 100);
-}
-
-// ── PLAN SELECTOR ──
+// ── PLAN ──
 function selectPlan(planId) {
   selectedPlan = planId;
-  document.querySelectorAll('.plan-card').forEach(c => {
-    c.classList.toggle('selected', c.dataset.plan === planId);
-  });
-  // reset promo if active
-  if (appliedPromo) applyPromoDisplay(appliedPromo, planId);
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.toggle('selected', c.dataset.plan === planId));
 }
 
-// ── PROMO ──
-async function applyPromo() {
+// ── ПРОМОКОД ──
+async function usePromoCode() {
   const code = document.getElementById('promo-input').value.trim().toUpperCase();
   const st = document.getElementById('promo-status');
   if (!code) return;
-  st.style.color = 'var(--muted)';
-  st.textContent = 'Проверяю...';
+  st.style.color = 'var(--muted)'; st.textContent = 'Проверяю...';
   try {
-    const r = await fetch('/api/promo/check', {
+    const r = await fetch('/api/promo/use', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ code, planId: selectedPlan })
+      body: JSON.stringify({ code, userId, refCode: new URLSearchParams(location.search).get('ref') })
     });
     const data = await r.json();
     if (data.ok) {
-      appliedPromo = { code, ...data };
-      applyPromoDisplay(appliedPromo, selectedPlan);
+      st.style.color = 'var(--accent)'; st.textContent = `✅ Активировано: ${data.label}!`;
+      showPaidSection();
     } else {
-      st.style.color = 'var(--red)';
-      st.textContent = '❌ ' + (data.msg || 'Промокод не найден');
-      appliedPromo = null;
+      st.style.color = 'var(--red)'; st.textContent = '❌ ' + (data.msg || 'Промокод не найден');
     }
-  } catch(e) {
-    st.style.color = 'var(--red)'; st.textContent = '⚠ Ошибка соединения';
-  }
+  } catch(e) { st.style.color = 'var(--red)'; st.textContent = '⚠ Ошибка'; }
 }
 
-function applyPromoDisplay(promo, planId) {
-  const st = document.getElementById('promo-status');
-  if (promo.freePlan) {
-    st.style.color = 'var(--accent)';
-    st.textContent = `✅ Бесплатный доступ: ${promo.planLabel}!`;
-    document.getElementById('pay-crypto-btn').textContent = '🎁 // АКТИВИРОВАТЬ БЕСПЛАТНО';
-  } else {
-    st.style.color = 'var(--accent)';
-    st.textContent = `✅ Скидка ${promo.discount}%! Цена: ${promo.discountedPrice} USDT`;
-  }
-}
-
-// ── CRYPTOBOT PAYMENT ──
+// ── CRYPTOBOT ──
 async function payCrypto() {
   const btn = document.getElementById('pay-crypto-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '// СОЗДАЮ СЧЁТ...'; }
+  btn.disabled = true; btn.textContent = '// СОЗДАЮ СЧЁТ...';
   try {
     const r = await fetch('/api/create-invoice', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId,
-        planId: selectedPlan,
-        promoCode: appliedPromo?.code || null,
-        refCode: new URLSearchParams(location.search).get('ref')
-      })
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ userId, planId: selectedPlan, refCode: new URLSearchParams(location.search).get('ref') })
     });
     const data = await r.json();
-    if (data.free) {
-      // Бесплатный промокод — сразу активирован
-      document.getElementById('pay-section').style.display = 'none';
-      document.getElementById('paid-section').style.display = 'block';
-      return;
-    }
     if (data.ok && data.pay_url) {
       if (tg) tg.openLink(data.pay_url);
       else window.open(data.pay_url, '_blank');
       setTimeout(() => {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = '✅ // Я ОПЛАТИЛ — ПРОВЕРИТЬ';
-          btn.onclick = () => checkCryptoPayment(data.invoice_id);
-        }
+        btn.disabled = false; btn.textContent = '✅ Я ОПЛАТИЛ — ПРОВЕРИТЬ';
+        btn.onclick = () => checkCryptoPayment(data.invoice_id);
       }, 2000);
-    } else {
-      if (btn) { btn.disabled = false; btn.textContent = '💳 // ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT'; btn.onclick = payCrypto; }
-    }
-  } catch(e) {
-    if (btn) { btn.disabled = false; btn.textContent = '💳 // ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT'; btn.onclick = payCrypto; }
-  }
+    } else { btn.disabled = false; btn.textContent = '💳 // ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT'; btn.onclick = payCrypto; }
+  } catch(e) { btn.disabled = false; btn.textContent = '💳 // ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT'; btn.onclick = payCrypto; }
 }
 
 async function checkCryptoPayment(invoiceId) {
   const btn = document.getElementById('pay-crypto-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '// ПРОВЕРЯЮ...'; }
+  btn.disabled = true; btn.textContent = '// ПРОВЕРЯЮ...';
   try {
     const r = await fetch(`/api/check-invoice/${invoiceId}?userId=${userId}`);
     const data = await r.json();
-    if (data.paid) {
-      document.getElementById('pay-section').style.display = 'none';
-      document.getElementById('paid-section').style.display = 'block';
-    } else {
-      if (btn) { btn.disabled = false; btn.textContent = '🔄 // ПРОВЕРИТЬ ЕЩЁ РАЗ'; btn.onclick = () => checkCryptoPayment(invoiceId); }
-      document.getElementById('verify-status').style.color = 'var(--muted)';
-      document.getElementById('verify-status').textContent = 'Оплата пока не найдена. Попробуй через минуту.';
+    if (data.paid) { showPaidSection(); }
+    else {
+      btn.disabled = false; btn.textContent = '🔄 ПРОВЕРИТЬ ЕЩЁ РАЗ'; btn.onclick = () => checkCryptoPayment(invoiceId);
+      document.getElementById('verify-status').textContent = 'Не найдено. Попробуй через минуту.';
     }
-  } catch(e) {
-    if (btn) { btn.disabled = false; btn.textContent = '🔄 // ПРОВЕРИТЬ ЕЩЁ РАЗ'; }
-  }
-}
-
-// ── COPY WALLET ──
-function copyWallet() {
-  navigator.clipboard.writeText(WALLET).catch(()=>{});
-  if (tg) tg.showPopup({message:'Адрес скопирован!', buttons:[{type:'ok'}]});
-  else alert('Скопировано!');
+  } catch(e) { btn.disabled = false; btn.textContent = '🔄 ПРОВЕРИТЬ'; }
 }
 
 // ── VERIFY USDT ──
@@ -841,33 +807,44 @@ async function verifyPayment() {
   const hash = document.getElementById('hash-input').value.trim();
   const btn = document.getElementById('verify-btn');
   const status = document.getElementById('verify-status');
-  if (hash.length < 60) { status.style.color='var(--red)'; status.textContent='⚠ Это не похоже на хэш транзакции'; return; }
+  if (hash.length < 60) { status.style.color='var(--red)'; status.textContent='⚠ Не похоже на хэш'; return; }
   btn.disabled = true; btn.textContent = '// ПРОВЕРЯЮ...';
-  status.style.color = 'var(--muted)'; status.textContent = 'Запрос к блокчейну Tron...';
+  status.style.color = 'var(--muted)'; status.textContent = 'Запрос к блокчейну...';
   try {
     const r = await fetch('/api/verify', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        hash, userId,
-        planId: selectedPlan,
-        promoCode: appliedPromo?.code || null,
-        refCode: new URLSearchParams(location.search).get('ref')
-      })
+      body: JSON.stringify({ hash, userId, planId: selectedPlan, refCode: new URLSearchParams(location.search).get('ref') })
     });
     const data = await r.json();
-    if (data.ok) {
-      document.getElementById('pay-section').style.display = 'none';
-      document.getElementById('paid-section').style.display = 'block';
-    } else {
-      const msgs = { hash_used:'❌ Этот хэш уже использован', already_paid:'✅ Уже оплачено', missing_params:'⚠ Ошибка запроса' };
-      status.style.color = 'var(--red)';
-      status.textContent = msgs[data.status] || '❌ Проверьте хэш и попробуйте снова';
+    if (data.ok) { showPaidSection(); }
+    else {
+      const msgs = { hash_used:'❌ Хэш уже использован', already_paid:'✅ Уже активна', wrong_amount:'❌ Неверная сумма', not_found:'❌ Не найдена. Подожди 1-2 мин', not_confirmed:'⏳ Не подтверждена', error:'⚠ Ошибка' };
+      status.style.color = 'var(--red)'; status.textContent = msgs[data.status] || '❌ Ошибка';
       btn.disabled = false; btn.textContent = '// ПРОВЕРИТЬ ОПЛАТУ';
     }
-  } catch(e) {
-    status.style.color='var(--red)'; status.textContent='⚠ Ошибка соединения. Попробуй снова.';
-    btn.disabled=false; btn.textContent='// ПРОВЕРИТЬ ОПЛАТУ';
-  }
+  } catch(e) { status.style.color='var(--red)'; status.textContent='⚠ Ошибка'; btn.disabled=false; btn.textContent='// ПРОВЕРИТЬ ОПЛАТУ'; }
+}
+
+function showPaidSection() {
+  document.getElementById('pay-section').style.display = 'none';
+  document.getElementById('paid-section').style.display = 'block';
+  loadQR();
+}
+
+async function loadQR() {
+  try {
+    const qrBlock = document.getElementById('qr-block');
+    const qrImg = document.getElementById('qr-img');
+    qrImg.src = `/api/qr/${userId}?t=${Date.now()}`;
+    qrImg.onload = () => { qrBlock.style.display = 'block'; };
+  } catch(e) {}
+}
+
+// ── COPY WALLET ──
+function copyWallet() {
+  navigator.clipboard.writeText(WALLET).catch(()=>{});
+  if (tg) tg.showPopup({message:'Адрес скопирован!', buttons:[{type:'ok'}]});
+  else alert('Скопировано!');
 }
 
 // ── SPEEDS ──
@@ -882,7 +859,6 @@ function animateSpeeds() {
 }
 setTimeout(animateSpeeds, 500);
 
-// ── CHANNEL ──
 function openChannel() {
   if (tg) tg.openTelegramLink('https://t.me/PKHHET');
   else window.open('https://t.me/PKHHET', '_blank');
@@ -893,17 +869,13 @@ async function loadProfile() {
   const profId = document.getElementById('prof-id');
   if (tgUser) profId.textContent = `@${tgUser.username || userId}`;
   else profId.textContent = `ID: ${userId}`;
-
   const myCode = `RKN${String(userId).slice(-5)}`;
   document.getElementById('ref-link').textContent = `https://t.me/${BOT_USERNAME}?start=${myCode}`;
-
-  startLiveCounter(174);
-
+  startLiveCounter(174 + getDailyBonus());
   try {
     const r = await fetch(`/api/user/${userId}`, { signal: AbortSignal.timeout(4000) });
     const data = await r.json();
-    if (data.total > 174) startLiveCounter(data.total + getDailyBonus());
-    else startLiveCounter(174 + getDailyBonus());
+    if (data.total > 0) startLiveCounter(data.total + getDailyBonus());
     document.getElementById('prof-refs').textContent = data.refs || 0;
     document.getElementById('sub-bonus').textContent = data.free || 0;
     if (data.paid) {
@@ -911,23 +883,16 @@ async function loadProfile() {
       document.getElementById('status-text').textContent = 'АКТИВНА';
       document.getElementById('sub-status').textContent = 'АКТИВНА';
       document.getElementById('sub-status').className = 'sub-val green';
-      const planNames = { month1:'1 МЕСЯЦ', month6:'6 МЕСЯЦЕВ', month12:'1 ГОД' };
+      const planNames = { month1:'1 МЕСЯЦ — $1', month6:'6 МЕСЯЦЕВ — $6', month12:'1 ГОД — $12' };
       document.getElementById('sub-plan').textContent = planNames[data.plan] || 'АКТИВНА';
-      if (data.expires_at) {
-        const exp = new Date(data.expires_at);
-        document.getElementById('sub-expires').textContent = exp.toLocaleDateString('ru-RU');
-      }
+      if (data.expires_at) document.getElementById('sub-expires').textContent = new Date(data.expires_at).toLocaleDateString('ru-RU');
       document.getElementById('no-sub-block').style.display = 'none';
-      document.getElementById('pay-section').style.display = 'none';
-      document.getElementById('paid-section').style.display = 'block';
+      showPaidSection();
     }
-    if (data.refCode) {
-      document.getElementById('ref-link').textContent = `https://t.me/${BOT_USERNAME}?start=${data.refCode}`;
-    }
+    if (data.refCode) document.getElementById('ref-link').textContent = `https://t.me/${BOT_USERNAME}?start=${data.refCode}`;
   } catch(e) {}
 }
 
-// ── COPY REF ──
 function copyRef() {
   const text = document.getElementById('ref-link').textContent;
   navigator.clipboard.writeText(text).catch(()=>{});
@@ -935,64 +900,53 @@ function copyRef() {
   else alert('Скопировано!');
 }
 
-// ── LIVE COUNTER ──
 function getDailyBonus() {
   const start = new Date('2026-04-01T00:00:00');
-  const now = new Date();
-  const days = Math.floor((now - start) / 86400000);
+  const days = Math.floor((new Date() - start) / 86400000);
   let bonus = 0;
   for (let i = 0; i < days; i++) bonus += 2 + (i * 3 + 7) % 6;
   return Math.max(0, bonus);
 }
 
 let liveCount = 174;
-function startLiveCounter(startFrom) {
-  liveCount = startFrom;
-  function updateBoth(n) {
+function startLiveCounter(from) {
+  liveCount = from;
+  function upd(n) {
     ['prof-total','home-total'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) {
-        el.textContent = n;
-        el.style.transition = 'all 0.4s ease';
-        el.style.transform = 'scale(1.15)';
-        setTimeout(() => { el.style.transform = ''; }, 400);
-      }
+      if (el) { el.textContent = n; el.style.transition='all 0.4s'; el.style.transform='scale(1.15)'; setTimeout(()=>{el.style.transform='';},400); }
     });
   }
-  updateBoth(liveCount);
-  function scheduleNext() {
-    setTimeout(() => { liveCount++; updateBoth(liveCount); scheduleNext(); }, (180 + Math.random() * 360) * 1000);
-  }
-  scheduleNext();
+  upd(liveCount);
+  function next() { setTimeout(() => { liveCount++; upd(liveCount); next(); }, (180 + Math.random()*360)*1000); }
+  next();
 }
 
-// ── ADMIN PANEL ──
+// ── ADMIN ──
 async function loadAdminData() {
   try {
-    const [statsR, promosR] = await Promise.all([
+    const [sR, pR] = await Promise.all([
       fetch(`/api/admin/stats?adminId=${userId}`),
       fetch(`/api/admin/promos?adminId=${userId}`)
     ]);
-    const stats = await statsR.json();
-    const promos = await promosR.json();
-
+    const stats = await sR.json();
+    const promos = await pR.json();
     if (stats.ok) {
       document.getElementById('admin-total').textContent = stats.total;
-      const recent = (stats.recent || []).map(r => {
-        const planNames = { month1:'1мес', month6:'6мес', month12:'1год' };
+      const planNames = { month1:'1мес/$1', month6:'6мес/$6', month12:'1год/$12' };
+      const recent = (stats.recent||[]).map(r => {
         const exp = r.expires_at ? new Date(r.expires_at).toLocaleDateString('ru-RU') : '∞';
-        return `${r.username || r.user_id} — ${planNames[r.plan] || r.plan} — до ${exp}`;
+        return `${r.username||r.user_id} — ${planNames[r.plan]||r.plan} — до ${exp}`;
       }).join('<br>');
-      document.getElementById('admin-recent').innerHTML = recent || 'Нет данных';
+      document.getElementById('admin-recent').innerHTML = recent || '—';
     }
-
     if (promos.ok) {
       document.getElementById('admin-promos-count').textContent = promos.promos?.length || 0;
-      const list = (promos.promos || []).map(p => {
-        const color = p.active ? 'var(--accent)' : 'var(--muted)';
-        return `<span style="color:${color}">${p.code}</span> ${p.discount}%${p.free_plan ? ` [${p.free_plan}]` : ''} ${p.uses}/${p.max_uses} ${p.active ? '✅' : '❌'}`;
-      }).join('<br>');
-      document.getElementById('admin-promos-list').innerHTML = list || 'Нет промокодов';
+      const planNames = { month1:'1 мес', month6:'6 мес', month12:'1 год' };
+      const list = (promos.promos||[]).map(p =>
+        `<span style="color:var(--accent);letter-spacing:2px;font-size:13px">${p.code}</span> <span style="color:var(--muted);font-size:10px">${planNames[p.plan]||p.plan}</span> <span onclick="copyText('${p.code}',this)" style="color:var(--pink);font-size:10px;cursor:pointer">[скопировать]</span>`
+      ).join('<br>');
+      document.getElementById('admin-promos-list').innerHTML = list || 'Нет активных промокодов';
     }
   } catch(e) {}
 }
@@ -1001,7 +955,7 @@ async function grantAccess(planId) {
   const uid = document.getElementById('grant-uid').value.trim();
   const st = document.getElementById('grant-status');
   if (!uid) { st.style.color='var(--red)'; st.textContent='Введи Telegram ID'; return; }
-  st.style.color = 'var(--muted)'; st.textContent = 'Выдаю доступ...';
+  st.style.color='var(--muted)'; st.textContent='Выдаю доступ и отправляю QR...';
   try {
     const r = await fetch('/api/admin/grant', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -1009,48 +963,25 @@ async function grantAccess(planId) {
     });
     const data = await r.json();
     if (data.ok) {
-      st.style.color = 'var(--accent)';
-      st.textContent = `✅ Доступ выдан: ${uid}`;
+      st.style.color='var(--accent)'; st.textContent=`✅ QR отправлен пользователю ${uid}`;
       document.getElementById('grant-uid').value = '';
       loadAdminData();
-    } else {
-      st.style.color = 'var(--red)'; st.textContent = '❌ ' + (data.msg || 'Ошибка');
-    }
-  } catch(e) { st.style.color='var(--red)'; st.textContent='⚠ Ошибка соединения'; }
+    } else { st.style.color='var(--red)'; st.textContent='❌ '+(data.msg||'Ошибка'); }
+  } catch(e) { st.style.color='var(--red)'; st.textContent='⚠ Ошибка'; }
 }
 
-let selectedFreePlan = null;
-function setFreePromoplan(planId) {
-  selectedFreePlan = planId;
-  ['month1','month6','month12'].forEach(p => {
-    const btn = document.getElementById(`fp-${p}`);
-    if (btn) {
-      btn.style.background = p === planId ? 'rgba(0,200,255,0.1)' : 'rgba(0,0,0,0.3)';
-      btn.style.borderColor = p === planId ? 'rgba(0,200,255,0.4)' : 'var(--border)';
-      btn.style.color = p === planId ? 'var(--accent)' : 'var(--muted)';
-    }
-  });
-}
-
-async function createPromo() {
-  const code = document.getElementById('new-promo-code').value.trim();
-  const discount = parseInt(document.getElementById('new-promo-discount').value) || 0;
-  const maxUses = parseInt(document.getElementById('new-promo-uses').value) || 1;
+async function createPromo(planId) {
   const st = document.getElementById('promo-create-status');
-  if (!code) { st.style.color='var(--red)'; st.textContent='Введи код'; return; }
   st.style.color='var(--muted)'; st.textContent='Создаю...';
   try {
-    const r = await fetch('/api/admin/promo', {
+    const r = await fetch('/api/admin/promo/create', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ adminId: userId, code, discount, freePlan: selectedFreePlan, maxUses })
+      body: JSON.stringify({ adminId: userId, planId })
     });
     const data = await r.json();
     if (data.ok) {
-      st.style.color='var(--accent)'; st.textContent=`✅ Промокод ${code.toUpperCase()} создан`;
-      document.getElementById('new-promo-code').value = '';
-      document.getElementById('new-promo-discount').value = '';
-      document.getElementById('new-promo-uses').value = '';
-      selectedFreePlan = null;
+      st.style.color='var(--accent)';
+      st.innerHTML = `✅ Промокод: <span style="font-size:16px;letter-spacing:3px;cursor:pointer" onclick="copyText('${data.code}',this)">${data.code}</span> (${data.label}) — нажми чтобы скопировать`;
       loadAdminData();
     } else { st.style.color='var(--red)'; st.textContent='❌ Ошибка'; }
   } catch(e) { st.style.color='var(--red)'; st.textContent='⚠ Ошибка'; }
@@ -1066,22 +997,15 @@ function copyText(text, el) {
 
 // ── INIT ──
 async function init() {
-  // Показать вкладку Admin если это владелец
   if (String(userId) === String(ADMIN_TG_ID)) {
-    const adminNav = document.getElementById('nav-admin');
-    if (adminNav) adminNav.style.display = 'flex';
+    document.getElementById('nav-admin').style.display = 'flex';
   }
-
-  // Загрузить счётчик сразу
   startLiveCounter(174 + getDailyBonus());
   try {
     const r = await fetch(`/api/user/${userId}`, { signal: AbortSignal.timeout(3000) });
     const data = await r.json();
     if (data.total > 0) startLiveCounter(data.total + getDailyBonus());
-    if (data.paid) {
-      document.getElementById('pay-section').style.display = 'none';
-      document.getElementById('paid-section').style.display = 'block';
-    }
+    if (data.paid) showPaidSection();
   } catch(e) {}
 }
 
