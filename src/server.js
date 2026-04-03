@@ -383,14 +383,15 @@ app.get('/api/user/:userId', async (req, res) => {
 
 // Регистрируем пользователя при открытии Mini App
 app.post('/api/touch', async (req, res) => {
-  const { userId, username } = req.body;
+  const { userId, username, firstName } = req.body;
   if (!userId) return res.json({ ok: false });
+  const displayName = username ? `@${username}` : (firstName || String(userId));
   try {
     await pool.query(`
       INSERT INTO subscribers (user_id, username, my_ref_code, plan, active)
       VALUES ($1, $2, $3, 'none', FALSE)
       ON CONFLICT (user_id) DO UPDATE SET username=COALESCE($2, subscribers.username)
-    `, [String(userId), username || null, `RKN${String(userId).slice(-5)}`]);
+    `, [String(userId), displayName, `RKN${String(userId).slice(-5)}`]);
   } catch(e) {}
   res.json({ ok: true });
 });

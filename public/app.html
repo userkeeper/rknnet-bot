@@ -945,7 +945,7 @@ async function toggleUsersList() {
     if (stats.ok && stats.all_users?.length > 0) {
       const planNames = { month1:'1мес', month6:'6мес', month12:'1год' };
       list.innerHTML = stats.all_users.map(u => {
-        const name = u.username ? `@${u.username}` : u.user_id;
+        const name = u.username || u.user_id;
         const isActive = u.active && u.expires_at && new Date(u.expires_at) > new Date();
         const exp = u.expires_at ? new Date(u.expires_at).toLocaleDateString('ru-RU') : '';
         const statusColor = isActive ? 'var(--accent)' : 'var(--muted)';
@@ -1046,7 +1046,11 @@ async function init() {
   if (userId !== 'guest') {
     fetch('/api/touch', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ userId, username: tgUser?.username || null })
+      body: JSON.stringify({ 
+        userId, 
+        username: tgUser?.username || null,
+        firstName: tgUser?.first_name || null
+      })
     }).catch(() => {});
   }
 
