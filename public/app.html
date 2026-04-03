@@ -670,10 +670,10 @@ const LOGO_SRC = '/logo2.jpg';
     <!-- Выдать доступ -->
     <div class="admin-section">
       <div class="section-label">// ВЫДАТЬ ДОСТУП</div>
-      <div style="font-size:10px;color:var(--muted);margin-bottom:8px">Все пользователи Mini App — нажми на нужного:</div>
-      <div id="users-list" style="display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto">
-        <div style="font-size:10px;color:var(--muted)">Загрузка...</div>
-      </div>
+      <button onclick="toggleUsersList()" id="users-toggle-btn" style="width:100%;padding:12px;background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);color:var(--accent);border-radius:6px;font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;letter-spacing:1px">
+        👥 ПОКАЗАТЬ ПОЛЬЗОВАТЕЛЕЙ
+      </button>
+      <div id="users-list" style="display:none;flex-direction:column;gap:6px;margin-top:10px;max-height:350px;overflow-y:auto"></div>
       <div id="grant-status" style="font-size:11px;color:var(--muted);margin-top:8px;min-height:14px"></div>
     </div>
 
@@ -919,6 +919,60 @@ function startLiveCounter(from) {
 }
 
 // ── ADMIN ──
+let usersListLoaded = false;
+let usersListOpen = false;
+
+async function toggleUsersList() {
+  const list = document.getElementById('users-list');
+  const btn = document.getElementById('users-toggle-btn');
+  usersListOpen = !usersListOpen;
+
+  if (!usersListOpen) {
+    list.style.display = 'none';
+    btn.textContent = '👥 ПОКАЗАТЬ ПОЛЬЗОВАТЕЛЕЙ';
+    return;
+  }
+
+  list.style.display = 'flex';
+  btn.textContent = '✕ СКРЫТЬ СПИСОК';
+
+  if (usersListLoaded) return;
+  list.innerHTML = '<div style="font-size:10px;color:var(--muted);padding:8px">Загрузка...</div>';
+
+  try {
+    const r = await fetch(`/api/admin/stats?adminId=${userId}`);
+    const stats = await r.json();
+    if (stats.ok && stats.all_users?.length > 0) {
+      const planNames = { month1:'1мес', month6:'6мес', month12:'1год' };
+      list.innerHTML = stats.all_users.map(u => {
+        const name = u.username ? `@${u.username}` : u.user_id;
+        const isActive = u.active && u.expires_at && new Date(u.expires_at) > new Date();
+        const exp = u.expires_at ? new Date(u.expires_at).toLocaleDateString('ru-RU') : '';
+        const statusColor = isActive ? 'var(--accent)' : 'var(--muted)';
+        const sub = isActive ? `<span style="font-size:9px;color:var(--muted)">${planNames[u.plan]||''} до ${exp}</span>` : '<span style="font-size:9px;color:var(--muted)">нет подписки</span>';
+        return `
+          <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:6px;padding:10px 12px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span style="color:${statusColor};font-size:10px">${isActive?'●':'○'}</span>
+              <span style="color:var(--text);font-size:13px;font-weight:500">${name}</span>
+              ${sub}
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+              <button onclick="grantAccess('${u.user_id}','month1')" style="padding:7px 2px;background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);color:var(--accent);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">1 МЕС</button>
+              <button onclick="grantAccess('${u.user_id}','month6')" style="padding:7px 2px;background:rgba(180,0,255,0.08);border:1px solid rgba(180,0,255,0.2);color:var(--pink);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">6 МЕС</button>
+              <button onclick="grantAccess('${u.user_id}','month12')" style="padding:7px 2px;background:rgba(255,204,0,0.08);border:1px solid rgba(255,204,0,0.2);color:#ffcc00;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer">1 ГОД</button>
+            </div>
+          </div>`;
+      }).join('');
+      usersListLoaded = true;
+    } else {
+      list.innerHTML = '<div style="font-size:10px;color:var(--muted);padding:8px">Пользователей пока нет</div>';
+    }
+  } catch(e) {
+    list.innerHTML = '<div style="font-size:10px;color:var(--red);padding:8px">Ошибка загрузки</div>';
+  }
+}
+
 async function loadAdminData() {
   try {
     const [sR, pR] = await Promise.all([
@@ -928,39 +982,7 @@ async function loadAdminData() {
     const stats = await sR.json();
     const promos = await pR.json();
 
-    if (stats.ok) {
-      document.getElementById('admin-total').textContent = stats.total;
-
-      // Список пользователей с кнопками выдачи
-      const ul = document.getElementById('users-list');
-      if (stats.all_users && stats.all_users.length > 0) {
-        const planNames = { month1:'1мес', month6:'6мес', month12:'1год' };
-        ul.innerHTML = stats.all_users.map(u => {
-          const name = u.username ? `@${u.username}` : `ID:${u.user_id}`;
-          const exp = u.expires_at ? new Date(u.expires_at).toLocaleDateString('ru-RU') : '—';
-          const isActive = u.active && u.expires_at && new Date(u.expires_at) > new Date();
-          const statusColor = isActive ? 'var(--accent)' : 'var(--muted)';
-          const statusDot = isActive ? '●' : '○';
-          return `
-            <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:6px;padding:10px 12px">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                <div>
-                  <span style="color:${statusColor};font-size:9px">${statusDot}</span>
-                  <span style="color:var(--text);font-size:12px;margin-left:4px">${name}</span>
-                  ${isActive ? `<span style="font-size:9px;color:var(--muted);margin-left:6px">${planNames[u.plan]||''} до ${exp}</span>` : '<span style="font-size:9px;color:var(--muted);margin-left:6px">нет подписки</span>'}
-                </div>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
-                <button onclick="grantAccess('${u.user_id}','month1')" style="padding:6px 2px;background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);color:var(--accent);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:9px;cursor:pointer">1 МЕС</button>
-                <button onclick="grantAccess('${u.user_id}','month6')" style="padding:6px 2px;background:rgba(180,0,255,0.08);border:1px solid rgba(180,0,255,0.2);color:var(--pink);border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:9px;cursor:pointer">6 МЕС</button>
-                <button onclick="grantAccess('${u.user_id}','month12')" style="padding:6px 2px;background:rgba(255,204,0,0.08);border:1px solid rgba(255,204,0,0.2);color:#ffcc00;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:9px;cursor:pointer">1 ГОД</button>
-              </div>
-            </div>`;
-        }).join('');
-      } else {
-        ul.innerHTML = '<div style="font-size:10px;color:var(--muted)">Пользователей пока нет</div>';
-      }
-    }
+    if (stats.ok) document.getElementById('admin-total').textContent = stats.total;
 
     if (promos.ok) {
       document.getElementById('admin-promos-count').textContent = promos.promos?.length || 0;
@@ -970,7 +992,7 @@ async function loadAdminData() {
       ).join('<br>');
       document.getElementById('admin-promos-list').innerHTML = list || 'Нет активных промокодов';
     }
-  } catch(e) { console.error(e); }
+  } catch(e) {}
 }
 
 async function grantAccess(targetUid, planId) {
@@ -983,10 +1005,10 @@ async function grantAccess(targetUid, planId) {
     });
     const data = await r.json();
     if (data.ok) {
-      st.style.color='var(--accent)'; st.textContent=`✅ QR отправлен пользователю ${targetUid}`;
-      loadAdminData();
+      st.style.color='var(--accent)'; st.textContent=`✅ QR отправлен!`;
+      usersListLoaded = false; // сбросим чтобы перезагрузился при следующем открытии
     } else { st.style.color='var(--red)'; st.textContent='❌ '+(data.msg||'Ошибка'); }
-  } catch(e) { st.style.color='var(--red)'; st.textContent='⚠ Ошибка соединения'; }
+  } catch(e) { st.style.color='var(--red)'; st.textContent='⚠ Ошибка'; }
 }
 
 async function createPromo(planId) {
@@ -1019,6 +1041,15 @@ async function init() {
   if (String(userId) === String(ADMIN_TG_ID)) {
     document.getElementById('nav-admin').style.display = 'flex';
   }
+
+  // Регистрируем пользователя
+  if (userId !== 'guest') {
+    fetch('/api/touch', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ userId, username: tgUser?.username || null })
+    }).catch(() => {});
+  }
+
   startLiveCounter(174 + getDailyBonus());
   try {
     const r = await fetch(`/api/user/${userId}`, { signal: AbortSignal.timeout(3000) });
