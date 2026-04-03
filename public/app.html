@@ -9,16 +9,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Unbounded:wght@400;700;900&display=swap');
 
 :root {
-  --bg: #05050a;
-  --surface: #0a0a12;
-  --card: #0e0e18;
-  --border: #1a1a2e;
-  --accent: #00ff88;
-  --red: #ff2244;
-  --blue: #0066ff;
-  --text: #e0e0f0;
-  --muted: #444466;
-  --dim: #222240;
+  --bg: #04030d;
+  --surface: #07061a;
+  --card: #0a0920;
+  --border: #1a1540;
+  --accent: #00cfff;
+  --pink: #cc44ff;
+  --red: #ff2266;
+  --blue: #2244ff;
+  --text: #dde0ff;
+  --muted: #3d3a6a;
+  --dim: #12103a;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -36,15 +37,15 @@ body {
 body::after {
   content:'';
   position:fixed; inset:0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,136,0.01) 2px, rgba(0,255,136,0.01) 4px);
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,180,255,0.012) 2px, rgba(0,180,255,0.012) 4px);
   pointer-events:none; z-index:999;
 }
 
 /* ── BOTTOM NAV ── */
 .nav {
   position: fixed; bottom:0; left:0; right:0; z-index:100;
-  background: rgba(5,5,10,0.95);
-  border-top: 1px solid var(--border);
+  background: rgba(4,3,13,0.97);
+  border-top: 1px solid rgba(0,180,255,0.15);
   display: flex;
   backdrop-filter: blur(20px);
 }
@@ -67,14 +68,15 @@ body::after {
 /* ── FEED SCREEN ── */
 .feed-header {
   padding: 20px 16px 12px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(0,180,255,0.12);
   display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(180deg, rgba(0,100,255,0.06) 0%, transparent 100%);
 }
 .logo-img {
-  width: 48px; height: 48px; border-radius: 50%;
+  width: 48px; height: 48px; border-radius: 8px;
   object-fit: cover;
-  border: 1px solid rgba(0,255,136,0.3);
-  box-shadow: 0 0 16px rgba(0,255,136,0.15);
+  border: 1px solid rgba(0,200,255,0.3);
+  box-shadow: 0 0 20px rgba(0,150,255,0.2), 0 0 40px rgba(180,0,255,0.1);
 }
 .feed-title {
   font-family: 'Unbounded', sans-serif;
@@ -96,11 +98,11 @@ body::after {
 .block::before {
   content:'';
   position:absolute; top:0; left:0; width:3px; height:100%;
-  background: var(--accent);
+  background: linear-gradient(180deg, var(--accent), var(--pink));
 }
 .block.red::before { background: var(--red); }
 .block.blue::before { background: var(--blue); }
-.block.gold::before { background: #ffcc00; }
+.block.gold::before { background: linear-gradient(180deg, var(--accent), var(--pink)); }
 
 .block-head {
   padding: 12px 14px 8px 18px;
@@ -111,8 +113,8 @@ body::after {
   display: flex; align-items: center; gap: 8px;
 }
 .block.red .block-head { color: var(--red); }
-.block.blue .block-head { color: #4499ff; }
-.block.gold .block-head { color: #ffcc00; }
+.block.blue .block-head { color: var(--accent); }
+.block.gold .block-head { color: var(--pink); }
 
 .block-body { padding: 0 14px 14px 18px; }
 
@@ -120,37 +122,37 @@ body::after {
   font-size: 12px; color: var(--text); line-height: 1.7;
 }
 .hl { color: var(--accent); font-weight: 700; }
-.hl-red { color: var(--red); }
+.hl-red { color: var(--pink); }
 
 /* Compare table */
 .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
 .cmp-col { background: rgba(0,0,0,0.3); border-radius: 4px; padding: 10px; }
-.cmp-col.bad { border: 1px solid rgba(255,34,68,0.2); }
-.cmp-col.good { border: 1px solid rgba(0,255,136,0.2); }
+.cmp-col.bad { border: 1px solid rgba(255,34,102,0.2); }
+.cmp-col.good { border: 1px solid rgba(0,200,255,0.2); }
 .cmp-head { font-size: 10px; font-weight: 700; margin-bottom: 6px; }
 .cmp-col.bad .cmp-head { color: var(--red); }
 .cmp-col.good .cmp-head { color: var(--accent); }
 .cmp-row { font-size: 10px; color: var(--muted); margin-bottom: 4px; line-height: 1.4; }
-.cmp-col.good .cmp-row { color: #aaaacc; }
+.cmp-col.good .cmp-row { color: #9090cc; }
 
 /* Speed bars */
 .spd-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
 .spd-lbl { font-size:10px; color:var(--muted); width:70px; flex-shrink:0; }
 .spd-track { flex:1; height:4px; background:var(--dim); border-radius:2px; overflow:hidden; }
-.spd-fill { height:100%; border-radius:2px; background: linear-gradient(90deg, var(--blue), var(--accent)); width:0; transition:width 1.2s cubic-bezier(0.4,0,0.2,1); }
+.spd-fill { height:100%; border-radius:2px; background: linear-gradient(90deg, var(--blue), var(--accent), var(--pink)); width:0; transition:width 1.2s cubic-bezier(0.4,0,0.2,1); }
 .spd-val { font-size:10px; color:var(--accent); width:50px; text-align:right; flex-shrink:0; }
 
 /* Steps */
 .steps { display:flex; flex-direction:column; gap:0; margin-top:6px; }
 .step { display:flex; gap:12px; padding:8px 0; position:relative; }
 .step:not(:last-child)::after { content:''; position:absolute; left:11px; top:30px; width:1px; height:calc(100% - 8px); background:var(--border); }
-.step-n { width:22px; height:22px; border-radius:2px; flex-shrink:0; background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.3); color:var(--accent); font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.step-n { width:22px; height:22px; border-radius:2px; flex-shrink:0; background:rgba(0,200,255,0.08); border:1px solid rgba(0,200,255,0.25); color:var(--accent); font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
 .step-t { font-size:11px; color:var(--text); line-height:1.5; padding-top:2px; }
 .step-d { font-size:10px; color:var(--muted); margin-top:2px; line-height:1.4; }
 
 /* Tags */
 .tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
-.tag { background:rgba(0,102,255,0.1); border:1px solid rgba(0,102,255,0.2); color:#6699ff; font-size:10px; padding:3px 8px; border-radius:2px; }
+.tag { background:rgba(0,100,255,0.08); border:1px solid rgba(0,150,255,0.2); color:var(--accent); font-size:10px; padding:3px 8px; border-radius:2px; }
 
 /* FAQ */
 .faq-item { margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--border); }
@@ -160,25 +162,25 @@ body::after {
 
 /* Promo hero */
 .promo-hero {
-  background: linear-gradient(135deg, rgba(0,102,255,0.08), rgba(0,255,136,0.05));
-  border: 1px solid rgba(0,255,136,0.15);
+  background: linear-gradient(135deg, rgba(0,80,255,0.1), rgba(180,0,255,0.08));
+  border: 1px solid rgba(0,200,255,0.12);
   border-radius: 4px; padding: 20px; text-align: center; margin: 12px 0;
 }
 .promo-tag { font-size:9px; color:var(--muted); letter-spacing:3px; text-transform:uppercase; margin-bottom:10px; }
-.promo-price { font-family:'Unbounded',sans-serif; font-size:40px; font-weight:900; color:var(--accent); line-height:1; }
+.promo-price { font-family:'Unbounded',sans-serif; font-size:40px; font-weight:900; background: linear-gradient(90deg, var(--accent), var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1; }
 .promo-yr { font-size:11px; color:var(--muted); margin-top:4px; }
 .promo-was { font-size:11px; color:var(--muted); text-decoration:line-through; margin-top:6px; }
-.promo-save { display:inline-block; margin-top:8px; background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); color:var(--accent); font-size:10px; padding:3px 12px; border-radius:2px; }
+.promo-save { display:inline-block; margin-top:8px; background:rgba(180,0,255,0.08); border:1px solid rgba(180,0,255,0.25); color:var(--pink); font-size:10px; padding:3px 12px; border-radius:2px; }
 
 /* Countdown */
 .cd { display:flex; gap:6px; justify-content:center; margin:14px 0; }
-.cd-u { flex:1; max-width:60px; background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:4px; padding:8px 4px; text-align:center; }
-.cd-n { font-family:'Unbounded',sans-serif; font-size:20px; font-weight:900; color:#ffcc00; line-height:1; }
+.cd-u { flex:1; max-width:60px; background:rgba(0,0,0,0.4); border:1px solid rgba(0,150,255,0.2); border-radius:4px; padding:8px 4px; text-align:center; }
+.cd-n { font-family:'Unbounded',sans-serif; font-size:20px; font-weight:900; background: linear-gradient(90deg, var(--accent), var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1; }
 .cd-l { font-size:8px; color:var(--muted); margin-top:2px; letter-spacing:1px; }
 
 /* Wallet */
 .wallet {
-  background:rgba(0,255,136,0.03); border:1px solid rgba(0,255,136,0.15);
+  background:rgba(0,200,255,0.03); border:1px solid rgba(0,200,255,0.12);
   border-radius:4px; padding:12px; margin:10px 0; text-align:center;
 }
 .wallet-lbl { font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; }
@@ -187,12 +189,12 @@ body::after {
 /* Hash input */
 .hash-inp {
   width:100%; background:rgba(0,0,0,0.4);
-  border:1px solid rgba(0,255,136,0.2); border-radius:4px;
+  border:1px solid rgba(0,200,255,0.2); border-radius:4px;
   padding:10px 12px; font-size:11px; color:var(--accent);
   font-family:'Share Tech Mono',monospace; outline:none;
   transition:border-color 0.2s; margin-top:10px;
 }
-.hash-inp:focus { border-color:rgba(0,255,136,0.6); }
+.hash-inp:focus { border-color:rgba(0,200,255,0.6); }
 .hash-inp::placeholder { color:var(--muted); }
 
 /* Buttons */
@@ -203,10 +205,10 @@ body::after {
   transition:all 0.15s; margin-top:8px; letter-spacing:1px;
   display:flex; align-items:center; justify-content:center; gap:6px;
 }
-.btn-green { background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.3); color:var(--accent); }
-.btn-green:active { background:rgba(0,255,136,0.2); transform:scale(0.98); }
-.btn-blue { background:rgba(0,102,255,0.1); border:1px solid rgba(0,102,255,0.3); color:#4499ff; }
-.btn-gold { background:rgba(255,204,0,0.08); border:1px solid rgba(255,204,0,0.25); color:#ffcc00; }
+.btn-green { background:rgba(0,200,255,0.08); border:1px solid rgba(0,200,255,0.3); color:var(--accent); }
+.btn-green:active { background:rgba(0,200,255,0.18); transform:scale(0.98); }
+.btn-blue { background:rgba(0,80,255,0.1); border:1px solid rgba(0,100,255,0.3); color:#7799ff; }
+.btn-gold { background:rgba(180,0,255,0.08); border:1px solid rgba(180,0,255,0.3); color:var(--pink); }
 .btn:disabled { opacity:0.4; pointer-events:none; }
 
 .verify-status { font-size:11px; color:var(--muted); text-align:center; margin-top:8px; min-height:16px; }
@@ -228,8 +230,8 @@ body::after {
   display:inline-flex; align-items:center; gap:6px;
   padding:4px 12px; border-radius:2px; font-size:10px; letter-spacing:1px;
 }
-.status-chip.active { background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.25); color:var(--accent); }
-.status-chip.inactive { background:rgba(255,34,68,0.08); border:1px solid rgba(255,34,68,0.25); color:var(--red); }
+.status-chip.active { background:rgba(0,200,255,0.07); border:1px solid rgba(0,200,255,0.25); color:var(--accent); }
+.status-chip.inactive { background:rgba(255,34,102,0.07); border:1px solid rgba(255,34,102,0.25); color:var(--red); }
 .status-dot { width:6px; height:6px; border-radius:50%; }
 .status-chip.active .status-dot { background:var(--accent); animation:pulse 2s infinite; }
 .status-chip.inactive .status-dot { background:var(--red); }
@@ -273,20 +275,20 @@ body::after {
 <body>
 <script>
 // Logo as data URI - loaded from server
-const LOGO_SRC = '/logo.jpg';
+const LOGO_SRC = '/logo2.jpg';
 </script>
 
 <!-- ── FEED ── -->
 <div class="screen active" id="screen-feed">
 
   <div class="feed-header">
-    <img class="logo-img" src="/logo.jpg" onerror="this.style.display='none'" alt="РКН.НЕТ">
+    <img class="logo-img" src="/logo2.jpg" onerror="this.style.display='none'" alt="РКН.НЕТ">
     <div style="flex:1">
       <div class="feed-title">РКН.НЕТ</div>
       <div class="feed-sub">// СВОБОДНЫЙ ИНТЕРНЕТ</div>
     </div>
     <div style="text-align:right">
-      <div style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;color:var(--accent)" id="home-total">174</div>
+      <div style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;color:var(--accent)" id="home-total">—</div>
       <div style="font-size:9px;color:var(--muted);letter-spacing:1px">С НАМИ</div>
       <button onclick="openChannel()" style="margin-top:4px;background:rgba(47,128,237,0.15);border:1px solid rgba(47,128,237,0.3);color:#4499ff;font-size:9px;font-family:'Share Tech Mono',monospace;padding:3px 8px;border-radius:4px;cursor:pointer;letter-spacing:1px">// КАНАЛ</button>
     </div>
@@ -312,16 +314,6 @@ const LOGO_SRC = '/logo.jpg';
           <div class="cd-u"><div class="cd-n" id="cd-s">--</div><div class="cd-l">СЕК</div></div>
         </div>
         <div id="pay-section">
-          <!-- Промокод -->
-          <div style="margin-bottom:12px">
-            <div style="font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">// ПРОМОКОД</div>
-            <div style="display:flex;gap:6px">
-              <input class="hash-inp" id="promo-input" placeholder="Введи промокод..." style="margin:0;flex:1">
-              <button onclick="applyPromo()" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:11px;padding:0 14px;border-radius:4px;cursor:pointer;white-space:nowrap">// OK</button>
-            </div>
-            <div id="promo-status" style="font-size:10px;color:var(--muted);margin-top:5px;min-height:14px"></div>
-          </div>
-
           <!-- CryptoBot оплата -->
           <button class="btn btn-gold" onclick="payCrypto()" style="margin-bottom:4px">
             💳 // ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT
@@ -350,36 +342,31 @@ const LOGO_SRC = '/logo.jpg';
         </div>
         <div id="paid-section" style="display:none;text-align:center;padding:16px 0">
           <div style="font-size:28px;margin-bottom:8px">✓</div>
-          <div style="font-family:'Unbounded',sans-serif;font-size:14px;color:var(--accent)">ТЫ В СПИСКЕ</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:6px">10 апреля в 10:00 получишь конфиг в бот</div>
+          <div style="font-family:'Unbounded',sans-serif;font-size:14px;color:var(--accent)">ПОДПИСКА АКТИВНА</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">Конфиг отправлен в бот — проверь сообщения</div>
 
           <div style="margin-top:20px;text-align:left">
-            <div style="font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">// УСТАНОВИ ПРИЛОЖЕНИЕ ЗАРАНЕЕ</div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">// КАК ПОДКЛЮЧИТЬСЯ</div>
 
             <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px">
-              <div style="font-size:10px;color:var(--muted);margin-bottom:6px">🍎 iPhone — найди в App Store:</div>
-              <div style="font-size:12px;color:var(--accent);cursor:pointer;margin-bottom:4px" onclick="copyText('Happ Proxy Utility Plus', this)">Happ Proxy Utility Plus</div>
-              <div style="font-size:12px;color:var(--accent);cursor:pointer" onclick="copyText('Изи VPN', this)">Изи VPN</div>
-              <div style="font-size:9px;color:var(--muted);margin-top:6px">👆 Нажми → скопируется → вставь в поиск App Store</div>
-              <div style="font-size:12px;color:var(--accent);cursor:pointer;margin-bottom:4px" onclick="copyText('V2rayNG', this)">V2rayNG</div>
-              <div style="font-size:12px;color:var(--accent);cursor:pointer" onclick="copyText('V2Ray Client', this)">V2Ray Client</div>
-              <div style="font-size:9px;color:var(--muted);margin-top:6px">Нажми на название — скопируется</div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:8px">📱 Шаг 1 — скачай приложение:</div>
+              <div style="font-size:12px;color:var(--accent);cursor:pointer;margin-bottom:6px" onclick="copyText('Streisand', this)">🍎 iPhone — Streisand</div>
+              <div style="font-size:12px;color:var(--accent);cursor:pointer" onclick="copyText('v2rayNG', this)">🤖 Android — v2rayNG</div>
+              <div style="font-size:9px;color:var(--muted);margin-top:6px">👆 Нажми → скопируется → вставь в поиск</div>
+            </div>
+
+            <div style="background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.2);border-radius:8px;padding:12px;margin-bottom:8px">
+              <div style="font-size:10px;color:var(--muted);margin-bottom:6px">📡 Шаг 2 — открой бот и найди сообщение с ссылкой подписки</div>
+              <div style="font-size:11px;color:var(--text);line-height:1.8">
+                В приложении: <span style="color:var(--accent)">+</span> → Import from URL → вставь ссылку<br>
+                Нажми подключить → <span style="color:var(--accent)">готово ✓</span>
+              </div>
             </div>
 
             <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:12px">
-              <div style="font-size:10px;color:var(--muted);margin-bottom:6px">💻 Windows — найди в браузере:</div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:6px">💻 Windows:</div>
               <div style="font-size:12px;color:var(--accent);cursor:pointer" onclick="copyText('V2rayN скачать', this)">V2rayN скачать</div>
-              <div style="font-size:9px;color:var(--muted);margin-top:6px">Нажми на название — скопируется</div>
-            </div>
-          </div>
-
-          <div style="margin-top:16px;text-align:left">
-            <div style="font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">// КАК ПОДКЛЮЧИТЬСЯ</div>
-            <div style="font-size:11px;color:var(--text);line-height:1.8">
-              1. Скачай приложение выше<br>
-              2. Дождись конфига 10 апреля в боте<br>
-              3. Скопируй ссылку → вставь в приложение<br>
-              4. Нажми подключить → <span style="color:var(--accent)">готово ✓</span>
+              <div style="font-size:9px;color:var(--muted);margin-top:6px">Нажми → скопируется → вставь в браузер</div>
             </div>
           </div>
         </div>
@@ -512,7 +499,7 @@ const LOGO_SRC = '/logo.jpg';
   <div class="profile">
 
     <div class="prof-hero">
-      <img class="prof-logo" src="/logo.jpg" onerror="this.style.display='none'" alt="">
+      <img class="prof-logo" src="/logo2.jpg" onerror="this.style.display='none'" alt="">
       <div class="prof-name">РКН.НЕТ</div>
       <div class="prof-id" id="prof-id">ID: —</div>
       <div id="status-chip" class="status-chip inactive">
@@ -523,7 +510,7 @@ const LOGO_SRC = '/logo.jpg';
 
     <div class="prof-grid">
       <div class="prof-stat">
-        <div class="prof-stat-n" id="prof-total">174</div>
+        <div class="prof-stat-n" id="prof-total">—</div>
         <div class="prof-stat-l">всего с нами</div>
       </div>
       <div class="prof-stat">
@@ -570,47 +557,6 @@ const LOGO_SRC = '/logo.jpg';
       <button class="btn btn-gold" onclick="showFeed(); scrollToPromo()">// ПЕРЕЙТИ К ОПЛАТЕ</button>
     </div>
 
-    <!-- ADMIN PANEL — только для @PKHMEN -->
-    <div id="admin-panel" style="display:none;margin-top:16px">
-      <div class="section-label">// ПАНЕЛЬ АДМИНИСТРАТОРА</div>
-      <div class="ref-box">
-        <div style="font-size:11px;color:var(--accent);margin-bottom:12px;letter-spacing:1px">// СОЗДАТЬ ПРОМОКОД</div>
-
-        <div style="margin-bottom:10px">
-          <div style="font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">Бесплатных месяцев</div>
-          <input class="hash-inp" id="admin-value" type="number" placeholder="3" value="1" style="margin:0">
-        </div>
-
-        <div style="margin-bottom:10px">
-          <div style="font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">Макс. использований</div>
-          <input class="hash-inp" id="admin-maxuses" type="number" placeholder="1" value="1" style="margin:0">
-        </div>
-
-        <button onclick="generatePromo(this)" class="btn btn-green" style="margin-top:4px">// СГЕНЕРИРОВАТЬ ПРОМОКОД</button>
-
-        <div id="admin-result" style="margin-top:10px;display:none">
-          <div style="font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">Промокод создан</div>
-          <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.2);border-radius:4px;padding:12px;text-align:center;cursor:pointer" onclick="copyPromoCode()" id="admin-promo-display">
-            <div style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;color:var(--accent)" id="admin-promo-code">—</div>
-            <div style="font-size:9px;color:var(--muted);margin-top:4px">нажми чтобы скопировать</div>
-          </div>
-          <div style="font-size:10px;color:var(--muted);margin-top:6px;text-align:center" id="admin-promo-info"></div>
-        </div>
-      </div>
-
-      <div class="ref-box" style="margin-top:10px">
-        <div style="font-size:11px;color:var(--accent);margin-bottom:10px;letter-spacing:1px">// СТАТИСТИКА</div>
-        <div class="sub-row">
-          <div class="sub-key">ВСЕГО ПОДПИСЧИКОВ</div>
-          <div class="sub-val green" id="admin-total">—</div>
-        </div>
-        <div class="sub-row" style="border:none">
-          <div class="sub-key">ПРОМОКОДОВ СОЗДАНО</div>
-          <div class="sub-val green" id="admin-promos">—</div>
-        </div>
-      </div>
-    </div>
-
   </div>
 </div>
 
@@ -652,7 +598,6 @@ function showProfile() {
   document.getElementById('nav-profile').classList.add('active');
   document.getElementById('nav-feed').classList.remove('active');
   loadProfile();
-  checkAdminAccess();
 }
 
 function scrollToPromo() {
@@ -690,124 +635,6 @@ setTimeout(animateSpeeds, 500);
 function openChannel() {
   if (tg) tg.openTelegramLink('https://t.me/PKHHET');
   else window.open('https://t.me/PKHHET', '_blank');
-}
-
-// ── ADMIN PANEL ──
-const ADMIN_USERNAME = 'PKHMEN';
-let currentPromoType = 'months';
-let generatedPromoCode = null;
-
-function generatePromoCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = 'RKN';
-  for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
-}
-
-async function generatePromo(btn) {
-  const code = generatePromoCode();
-  const months = parseInt(document.getElementById('admin-value').value) || 1;
-  const maxUses = parseInt(document.getElementById('admin-maxuses').value) || 1;
-
-  const origText = btn ? btn.textContent : '';
-  if (btn) { btn.textContent = '// СОЗДАЮ...'; btn.style.opacity = '0.6'; }
-
-  // Показываем промокод сразу — не ждём сервера
-  generatedPromoCode = code;
-  document.getElementById('admin-promo-code').textContent = code;
-  document.getElementById('admin-promo-info').textContent = `+${months} мес. бесплатно · ${maxUses} использований`;
-  document.getElementById('admin-result').style.display = 'block';
-
-  // Сохраняем на сервер в фоне
-  try {
-    await fetch('/api/admin/promo', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, type: 'months', value: months, maxUses, secret: 'PKHMEN_ADMIN_2026' })
-    });
-    loadAdminStats();
-  } catch(e) {
-    document.getElementById('admin-promo-info').textContent += ' ⚠️ сохрани код вручную';
-  }
-
-  if (btn) { btn.textContent = origText; btn.style.opacity = '1'; }
-}
-
-function copyPromoCode() {
-  if (!generatedPromoCode) return;
-  navigator.clipboard.writeText(generatedPromoCode).catch(() => {});
-  const el = document.getElementById('admin-promo-code');
-  el.textContent = 'СКОПИРОВАНО!';
-  setTimeout(() => { el.textContent = generatedPromoCode; }, 1500);
-}
-
-async function loadAdminStats() {
-  try {
-    const r = await fetch(`/api/admin/stats?secret=PKHMEN_ADMIN_2026`);
-    const data = await r.json();
-    if (data.ok) {
-      document.getElementById('admin-total').textContent = data.total || 0;
-      document.getElementById('admin-promos').textContent = data.promos || 0;
-    }
-  } catch(e) {}
-}
-
-function checkAdminAccess() {
-  const username = tgUser?.username;
-  if (username === ADMIN_USERNAME) {
-    const panel = document.getElementById('admin-panel');
-    if (panel) {
-      panel.style.display = 'block';
-      loadAdminStats();
-    }
-    // Админу — бесконечная подписка
-    document.getElementById('status-chip').className = 'status-chip active';
-    document.getElementById('status-text').textContent = 'АКТИВНА ∞';
-    document.getElementById('sub-status').textContent = 'АКТИВНА';
-    document.getElementById('sub-status').className = 'sub-val green';
-    document.getElementById('sub-plan').textContent = 'ADMIN / БЕЗЛИМИТ';
-    document.getElementById('sub-expires').textContent = '∞ НАВСЕГДА';
-    const noSub = document.getElementById('no-sub-block');
-    if (noSub) noSub.style.display = 'none';
-  }
-}
-
-// ── PROMO CODE ──
-let activePromo = null;
-
-async function applyPromo() {
-  const input = document.getElementById('promo-input');
-  const status = document.getElementById('promo-status');
-  const code = input.value.trim().toUpperCase();
-  if (!code) return;
-
-  status.style.color = 'var(--muted)';
-  status.textContent = '⏳ Проверяю...';
-
-  try {
-    const r = await fetch('/api/promo', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, userId })
-    });
-    const data = await r.json();
-
-    if (data.valid) {
-      status.style.color = 'var(--accent)';
-      status.textContent = `✓ Промокод активирован!`;
-      // Для всех типов — показываем экран "ТЫ В СПИСКЕ"
-      setTimeout(() => {
-        document.getElementById('pay-section').style.display = 'none';
-        document.getElementById('paid-section').style.display = 'block';
-      }, 800);
-    } else {
-      status.style.color = 'var(--red)';
-      status.textContent = data.message || '✗ Промокод не найден или уже использован';
-    }
-  } catch(e) {
-    status.style.color = 'var(--red)';
-    status.textContent = '✗ Ошибка соединения';
-  }
 }
 
 // ── CRYPTOBOT PAYMENT ──
