@@ -15,6 +15,55 @@ const CRYPTO_TOKEN = process.env.CRYPTO_TOKEN;
 const CRYPTO_API = 'https://pay.crypt.bot/api';
 const PRICE_USDT = 12;
 const PRICE_WITH_FEE = (12 * 1.03).toFixed(2); // 12.36 USDT с учётом комиссии 3%
+const VPN_API = process.env.VPN_API || 'http://46.62.155.188:8888';
+const VPN_SECRET = process.env.VPN_SECRET || 'rknnet2026secret';
+
+// ── VPN ВЫДАЧА КОНФИГА ──────────────────────────────────────────────────────
+async function provisionVPN(userId) {
+  try {
+    const r = await axios.get(`${VPN_API}/add`, {
+      params: { secret: VPN_SECRET, uid: String(userId) },
+      timeout: 10000
+    });
+    if (r.data.ok) return r.data.sub_url;
+    return null;
+  } catch(e) {
+    console.error('VPN provision error:', e.message);
+    return null;
+  }
+}
+
+async function sendVPNConfig(userId) {
+  const subUrl = await provisionVPN(userId);
+  if (!subUrl) {
+    await bot.sendMessage(userId,
+      `✅ *Оплата принята\\!*\n\nКонфиг будет отправлен в течение часа\\.`,
+      { parse_mode: 'MarkdownV2' }
+    );
+    return;
+  }
+  const escaped = subUrl.replace(/\./g, '\\.').replace(/-/g, '\\-').replace(/=/g, '\\=').replace(/\?/g, '\\?').replace(/&/g, '\\&').replace(/:/g, '\\:').replace(/\//g, '\\/');
+  await bot.sendMessage(userId,
+    `🎉 *Твой VPN готов\\!*\n\n` +
+    `📱 *Шаг 1:* Скачай приложение\n` +
+    `— iPhone: [Streisand](https://apps.apple.com/app/streisand/id6450534064)\n` +
+    `— Android: [v2rayNG](https://play.google.com/store/apps/details?id=com.v2ray.ang)\n\n` +
+    `📡 *Шаг 2:* Открой приложение → \\+ → Import from URL\n\n` +
+    `🔗 *Твоя ссылка подписки:*\n\`${escaped}\`\n\n` +
+    `_Или отсканируй QR\\-код из следующего сообщения_`,
+    { parse_mode: 'MarkdownV2', disable_web_page_preview: true }
+  );
+  // Отправляем QR через inline кнопку
+  await bot.sendMessage(userId,
+    `📷 Отсканируй QR\\-код для быстрого подключения:`,
+    {
+      parse_mode: 'MarkdownV2',
+      reply_markup: {
+        inline_keyboard: [[{ text: '🔗 Открыть ссылку подписки', url: subUrl }]]
+      }
+    }
+  );
+}
 
 // ── CRYPTOBOT API ──────────────────────────────────────────────────────────
 async function createInvoice(userId, refCode = null) {
@@ -79,26 +128,6 @@ async function initDB() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS used_hashes (
         hash TEXT PRIMARY KEY
-      )
-    `);
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS promo_codes (
-        code TEXT PRIMARY KEY,
-        type TEXT NOT NULL,
-        discount INTEGER DEFAULT 0,
-        months INTEGER DEFAULT 0,
-        max_uses INTEGER DEFAULT 1,
-        uses INTEGER DEFAULT 0,
-        active BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMP DEFAULT NOW()
-      )
-    `);
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS promo_uses (
-        code TEXT,
-        user_id TEXT,
-        used_at TIMESTAMP DEFAULT NOW(),
-        PRIMARY KEY (code, user_id)
       )
     `);
     console.log('БД инициализирована');
@@ -284,21 +313,13 @@ bot.on('callback_query', async (q) => {
     const refCode = payload.refCode || userRefCodes.get(userId) || null;
     await addSubscriber(userId, q.from.username || String(userId), `cryptobot_${invoiceId}`, refCode);
     const total = await totalSubscribers();
-    await bot.sendMessage(userId,
-      `🎉 *Оплата подтверждена\\!*\n\n💵 12 USDT ✓\n📅 10 апреля получишь конфиг прямо сюда в бот\\.\n\n*РКН\\.НЕТ* ждёт тебя\\!`,
-      { parse_mode: 'MarkdownV2',
-        reply_markup: { inline_keyboard: [[{ text: '📱 Как подключиться', callback_data: 'howto' }]] }
-      }
-    );
+    await sendVPNConfig(userId);
     try {
       await bot.sendMessage(ADMIN_ID,
         `💰 *ОПЛАТА CryptoBot\\!*\n\n👤 @${q.from.username || userId}\n💵 12 USDT\n📊 Всего: *${total}*`,
         { parse_mode: 'MarkdownV2' }
       );
     } catch(e) {}
-    waitingHash.add(userId);
-    await edit(`🔍 Вставь хэш транзакции следующим сообщением:`,
-      { inline_keyboard: [[{ text: '← Отмена', callback_data: 'main' }]] });
   }
 });
 
@@ -340,9 +361,10 @@ bot.on('message', async (msg) => {
   const total = await totalSubscribers();
 
   await bot.editMessageText(
-    `🎉 *Транзакция подтверждена\\!*\n\nСумма: *${amount.toFixed(2)} USDT* ✓\nСеть: *TRC\\-20* ✓\n\nТы в списке *РКН\\.НЕТ*\\. 10 апреля получишь конфиг\\.`,
+    `✅ *Транзакция подтверждена\\!* Настраиваю VPN\\.\\.\\.`,
     { chat_id: userId, message_id: wait.message_id, parse_mode: 'MarkdownV2' }
   );
+  await sendVPNConfig(userId);
 
   // Уведомление в личку админу
   try {
@@ -357,158 +379,6 @@ bot.on('message', async (msg) => {
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
-
-app.post('/api/promo', async (req, res) => {
-  const { userId, code } = req.body;
-  if (!userId || !code) return res.json({ ok: false, status: 'missing_params' });
-  if (await isPaid(userId)) return res.json({ ok: false, status: 'already_paid' });
-
-  // Проверяем не использован ли промокод этим юзером
-  try {
-    const r = await pool.query('SELECT 1 FROM used_hashes WHERE hash=$1', [`promo_${code}_${userId}`]);
-    if (r.rows.length > 0) return res.json({ ok: false, status: 'already_used' });
-  } catch(e) {}
-
-  await addSubscriber(userId, String(userId), `promo_${code}_${userId}`, null);
-  const total = await totalSubscribers();
-
-  try {
-    await bot.sendMessage(ADMIN_ID,
-      `🎁 *ПРОМОКОД\\!*\n👤 ID: ${userId}\n🔑 Код: ${code}\n📊 Всего: *${total}*`,
-      { parse_mode: 'MarkdownV2' }
-    );
-    await bot.sendMessage(userId,
-      `🎉 Промокод активирован\\! 10 апреля получишь конфиг\\.`,
-      { parse_mode: 'MarkdownV2' }
-    );
-  } catch(e) {}
-
-  res.json({ ok: true });
-});
-
-// API — проверка промокода
-app.post('/api/promo', async (req, res) => {
-  const { code, userId } = req.body;
-  if (!code || !userId) return res.json({ valid: false, message: 'Ошибка запроса' });
-
-  try {
-    const r = await pool.query(
-      'SELECT * FROM promo_codes WHERE code=$1 AND active=true',
-      [code.toUpperCase()]
-    );
-    if (r.rows.length === 0) return res.json({ valid: false, message: '✗ Промокод не найден' });
-
-    const promo = r.rows[0];
-
-    if (promo.uses >= promo.max_uses) return res.json({ valid: false, message: '✗ Промокод исчерпан' });
-
-    const used = await pool.query(
-      'SELECT 1 FROM promo_uses WHERE code=$1 AND user_id=$2',
-      [code.toUpperCase(), String(userId)]
-    );
-    if (used.rows.length > 0) return res.json({ valid: false, message: '✗ Ты уже использовал этот промокод' });
-
-    await pool.query('UPDATE promo_codes SET uses=uses+1 WHERE code=$1', [code.toUpperCase()]);
-    await pool.query('INSERT INTO promo_uses (code, user_id) VALUES ($1,$2)', [code.toUpperCase(), String(userId)]);
-
-    // Добавляем подписчика и уведомляем
-    if (!(await isPaid(userId))) {
-      await addSubscriber(userId, String(userId), `promo_${code}_${userId}`, null);
-    }
-
-    // Начисляем бонусные месяцы
-    if (promo.type === 'months' && promo.months > 0) {
-      await pool.query('UPDATE subscribers SET free_months = free_months + $1 WHERE user_id=$2', [promo.months, String(userId)]);
-    }
-
-    const total = await totalSubscribers();
-
-    // Уведомляем тебя
-    try {
-      await bot.sendMessage(ADMIN_ID,
-        `🎁 *Промокод использован\\!*\n👤 ID: ${userId}\n🔑 Код: \`${code}\`\n📅 Месяцев: *${promo.months || 0}*\n📊 Всего: *${total}*`,
-        { parse_mode: 'MarkdownV2' }
-      );
-    } catch(e) {}
-
-    // Уведомляем пользователя
-    try {
-      await bot.sendMessage(userId,
-        `🎉 *Промокод активирован\\!*\n\nТы в списке РКН\\.НЕТ\\. 10 апреля получишь конфиг прямо в этот бот\\.`,
-        { parse_mode: 'MarkdownV2' }
-      );
-    } catch(e) {}
-
-    return res.json({ valid: true, type: promo.type, months: promo.months });
-
-  } catch(e) {
-    console.error('Promo error:', e.message);
-    res.json({ valid: false, message: '✗ Ошибка сервера: ' + e.message });
-  }
-});
-
-// Команда создания промокода (только для админа)
-// Использование в Telegram: /promo FREE RKN2026 (бесплатный)
-// /promo DISCOUNT RKN50 50 (скидка 50%)
-// /promo MONTHS RKNBONUS 3 (3 месяца бесплатно)
-bot.onText(/\/promo (.+)/, async (msg, match) => {
-  if (msg.from.id !== ADMIN_ID) return;
-  const parts = match[1].split(' ');
-  const type = parts[0]?.toUpperCase();
-  const code = parts[1]?.toUpperCase();
-  const value = parseInt(parts[2]) || 1;
-  const maxUses = parseInt(parts[3]) || 1;
-
-  if (!type || !code) {
-    return bot.sendMessage(ADMIN_ID, 'Использование:\n/promo FREE КОД [макс_использований]\n/promo DISCOUNT КОД процент [макс]\n/promo MONTHS КОД месяцы [макс]');
-  }
-
-  try {
-    if (type === 'FREE') {
-      await pool.query('INSERT INTO promo_codes (code, type, max_uses) VALUES ($1,$2,$3) ON CONFLICT (code) DO UPDATE SET active=true, uses=0', [code, 'free', maxUses]);
-    } else if (type === 'DISCOUNT') {
-      await pool.query('INSERT INTO promo_codes (code, type, discount, max_uses) VALUES ($1,$2,$3,$4) ON CONFLICT (code) DO UPDATE SET active=true, uses=0, discount=$3', [code, 'discount', value, maxUses]);
-    } else if (type === 'MONTHS') {
-      await pool.query('INSERT INTO promo_codes (code, type, months, max_uses) VALUES ($1,$2,$3,$4) ON CONFLICT (code) DO UPDATE SET active=true, uses=0, months=$3', [code, 'months', value, maxUses]);
-    }
-    bot.sendMessage(ADMIN_ID, `✅ Промокод создан:\nКод: *${code}*\nТип: ${type}\nЗначение: ${value}\nМакс. использований: ${maxUses}`, { parse_mode: 'Markdown' });
-  } catch(e) {
-    bot.sendMessage(ADMIN_ID, `❌ Ошибка: ${e.message}`);
-  }
-});
-
-// Admin API — создание промокода
-app.post('/api/admin/promo', async (req, res) => {
-  const { code, type, value, maxUses, secret } = req.body;
-  if (secret !== 'PKHMEN_ADMIN_2026') return res.json({ ok: false, error: 'Unauthorized' });
-  try {
-    if (type === 'months') {
-      await pool.query('INSERT INTO promo_codes (code, type, months, max_uses) VALUES ($1,$2,$3,$4) ON CONFLICT (code) DO UPDATE SET active=true, uses=0, months=$3', [code, 'months', value || 1, maxUses || 1]);
-    } else if (type === 'free') {
-      await pool.query('INSERT INTO promo_codes (code, type, max_uses) VALUES ($1,$2,$3) ON CONFLICT (code) DO UPDATE SET active=true, uses=0', [code, 'free', maxUses || 1]);
-    } else if (type === 'discount') {
-      await pool.query('INSERT INTO promo_codes (code, type, discount, max_uses) VALUES ($1,$2,$3,$4) ON CONFLICT (code) DO UPDATE SET active=true, uses=0, discount=$3', [code, 'discount', value || 50, maxUses || 1]);
-    }
-    console.log(`Промокод создан: ${code} тип:${type} значение:${value} макс:${maxUses}`);
-    res.json({ ok: true, code });
-  } catch(e) {
-    console.error('Create promo error:', e.message);
-    // Если БД нет — всё равно возвращаем ok для демо
-    res.json({ ok: true, code, warning: 'DB unavailable, promo not saved' });
-  }
-});
-
-// Admin API — статистика
-app.get('/api/admin/stats', async (req, res) => {
-  if (req.query.secret !== 'PKHMEN_ADMIN_2026') return res.json({ ok: false });
-  try {
-    const total = await totalSubscribers();
-    const promos = await pool.query('SELECT COUNT(*) FROM promo_codes');
-    res.json({ ok: true, total, promos: parseInt(promos.rows[0].count) });
-  } catch(e) {
-    res.json({ ok: false });
-  }
-});
 
 app.post('/api/create-invoice', async (req, res) => {
   const { userId, refCode } = req.body;
@@ -533,11 +403,8 @@ app.get('/api/check-invoice/:invoiceId', async (req, res) => {
       `💰 *ОПЛАТА Mini App\\!*\n🆔 ${userId}\n💵 ${PRICE_WITH_FEE} USDT\n📊 Всего: *${total}*`,
       { parse_mode: 'MarkdownV2' }
     );
-    await bot.sendMessage(userId,
-      `🎉 Оплата подтверждена\\! 10 апреля получишь конфиг\\.`,
-      { parse_mode: 'MarkdownV2' }
-    );
   } catch(e) {}
+  await sendVPNConfig(userId);
   res.json({ paid: true });
 });
 
@@ -557,11 +424,8 @@ app.post('/api/verify', async (req, res) => {
         `💰 *ОПЛАТА \\(Mini App\\)\\!*\n\n🆔 ID: ${userId}\n💵 ${result.amount.toFixed(2)} USDT\n📊 Всего: *${total}*`,
         { parse_mode: 'MarkdownV2' }
       );
-      await bot.sendMessage(userId,
-        `🎉 *Оплата подтверждена\\!* Ты в списке РКН\\.НЕТ\\. 10 апреля получишь конфиг\\.`,
-        { parse_mode: 'MarkdownV2' }
-      );
     } catch(e) {}
+    await sendVPNConfig(userId);
     return res.json({ ...result, total });
   }
   res.json(result);
